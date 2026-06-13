@@ -8,4 +8,6 @@
     @include('site.partials.home.featured-categories')
 
     @include('site.partials.home.featured-products')
+
+    @include('site.partials.home.new-products')
 @endsection

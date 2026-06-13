@@ -477,6 +477,149 @@ if (productsSlider) {
 
     startProductsAutoPlay();
 }
+
+/*
+|--------------------------------------------------------------------------
+| New Products Slider
+|--------------------------------------------------------------------------
+*/
+const newProductsSlider = document.querySelector('[data-new-products-slider]');
+const newProductsNext = document.querySelector('[data-new-products-next]');
+const newProductsPrev = document.querySelector('[data-new-products-prev]');
+
+if (newProductsSlider) {
+    let newProductTimer = null;
+    let isNewProductDown = false;
+    let newProductStartX = 0;
+    let newProductScrollLeft = 0;
+
+    function getNewProductScrollAmount() {
+        const firstCard = newProductsSlider.querySelector('.product-card');
+
+        if (!firstCard) {
+            return 260;
+        }
+
+        const gap = window.innerWidth < 768 ? 16 : 20;
+        const cardsToMove = window.innerWidth < 768 ? 2 : 1;
+
+        return (firstCard.offsetWidth + gap) * cardsToMove;
+    }
+
+    function newProductsScrollNext() {
+        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const amount = getNewProductScrollAmount();
+
+        newProductsSlider.scrollBy({
+            left: isRtl ? -amount : amount,
+            behavior: 'smooth',
+        });
+
+        const maxScroll = newProductsSlider.scrollWidth - newProductsSlider.clientWidth;
+
+        setTimeout(function () {
+            if (!isRtl && newProductsSlider.scrollLeft >= maxScroll - 10) {
+                newProductsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+
+            if (isRtl && Math.abs(newProductsSlider.scrollLeft) >= maxScroll - 10) {
+                newProductsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+        }, 450);
+    }
+
+    function newProductsScrollPrev() {
+        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const amount = getNewProductScrollAmount();
+
+        newProductsSlider.scrollBy({
+            left: isRtl ? amount : -amount,
+            behavior: 'smooth',
+        });
+    }
+
+    function startNewProductsAutoPlay() {
+        stopNewProductsAutoPlay();
+
+        if (newProductsSlider.scrollWidth <= newProductsSlider.clientWidth) {
+            return;
+        }
+
+        newProductTimer = setInterval(newProductsScrollNext, 3600);
+    }
+
+    function stopNewProductsAutoPlay() {
+        if (newProductTimer) {
+            clearInterval(newProductTimer);
+            newProductTimer = null;
+        }
+    }
+
+    if (newProductsNext) {
+        newProductsNext.addEventListener('click', function () {
+            newProductsScrollNext();
+            startNewProductsAutoPlay();
+        });
+    }
+
+    if (newProductsPrev) {
+        newProductsPrev.addEventListener('click', function () {
+            newProductsScrollPrev();
+            startNewProductsAutoPlay();
+        });
+    }
+
+    newProductsSlider.addEventListener('mousedown', function (event) {
+        isNewProductDown = true;
+        newProductsSlider.classList.add('is-dragging');
+        newProductStartX = event.pageX - newProductsSlider.offsetLeft;
+        newProductScrollLeft = newProductsSlider.scrollLeft;
+        stopNewProductsAutoPlay();
+    });
+
+    newProductsSlider.addEventListener('mouseleave', function () {
+        if (!isNewProductDown) {
+            return;
+        }
+
+        isNewProductDown = false;
+        newProductsSlider.classList.remove('is-dragging');
+        startNewProductsAutoPlay();
+    });
+
+    newProductsSlider.addEventListener('mouseup', function () {
+        isNewProductDown = false;
+        newProductsSlider.classList.remove('is-dragging');
+        startNewProductsAutoPlay();
+    });
+
+    newProductsSlider.addEventListener('mousemove', function (event) {
+        if (!isNewProductDown) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const x = event.pageX - newProductsSlider.offsetLeft;
+        const walk = (x - newProductStartX) * 1.4;
+
+        newProductsSlider.scrollLeft = newProductScrollLeft - walk;
+    });
+
+    newProductsSlider.addEventListener('touchstart', function () {
+        stopNewProductsAutoPlay();
+    }, { passive: true });
+
+    newProductsSlider.addEventListener('touchend', function () {
+        startNewProductsAutoPlay();
+    });
+
+    window.addEventListener('resize', function () {
+        startNewProductsAutoPlay();
+    });
+
+    startNewProductsAutoPlay();
+}
 /*
 |--------------------------------------------------------------------------
 | Site Toast

@@ -697,6 +697,56 @@
             min-width: auto;
         }
     }
+        /*
+    |--------------------------------------------------------------------------
+    | New Products Slider
+    |--------------------------------------------------------------------------
+    */
+    .home-new-products-section {
+        @apply bg-white py-12 md:py-16;
+    }
+
+    .home-new-products-slider-wrap {
+        @apply relative;
+    }
+
+    .home-new-products-slider {
+        @apply flex gap-4 overflow-x-auto scroll-smooth pb-5 md:gap-5;
+        cursor: grab;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        touch-action: pan-y;
+        scroll-snap-type: x mandatory;
+    }
+
+    .home-new-products-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+    .home-new-products-slider.is-dragging {
+        cursor: grabbing;
+        scroll-behavior: auto;
+    }
+
+    .home-new-products-arrow {
+        @apply absolute top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-2xl font-bold text-dark shadow-soft transition hover:bg-brand hover:text-white md:h-11 md:w-11 md:text-3xl;
+    }
+
+    .home-new-products-prev {
+        @apply left-1 md:-left-5;
+    }
+
+    .home-new-products-next {
+        @apply right-1 md:-right-5;
+    }
+
+    html[dir="rtl"] .home-new-products-prev {
+        @apply left-auto right-1 md:-right-5;
+    }
+
+    html[dir="rtl"] .home-new-products-next {
+        @apply right-auto left-1 md:-left-5;
+    }
 }
 
 @keyframes announcement-marquee-ltr {

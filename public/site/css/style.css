@@ -1878,6 +1878,147 @@ html[dir="rtl"] .home-products-next {
   }
 }
 
+/*
+    |--------------------------------------------------------------------------
+    | New Products Slider
+    |--------------------------------------------------------------------------
+    */
+
+.home-new-products-section {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+  .home-new-products-section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
+
+.home-new-products-slider-wrap {
+  position: relative;
+}
+
+.home-new-products-slider {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .home-new-products-slider {
+    gap: 1.25rem;
+  }
+}
+
+.home-new-products-slider {
+  cursor: grab;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-y;
+  scroll-snap-type: x mandatory;
+}
+
+.home-new-products-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.home-new-products-slider.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.home-new-products-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 20;
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  --tw-translate-y: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: rgb(255 255 255 / 0.95);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity, 1));
+  --tw-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  --tw-shadow-colored: 0 18px 50px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  --tw-shadow-color: #f9fafb;
+  --tw-shadow: var(--tw-shadow-colored);
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.home-new-products-arrow:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(217 119 6 / var(--tw-bg-opacity, 1));
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+@media (min-width: 768px) {
+  .home-new-products-arrow {
+    height: 2.75rem;
+    width: 2.75rem;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+}
+
+.home-new-products-prev {
+  left: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .home-new-products-prev {
+    left: -1.25rem;
+  }
+}
+
+.home-new-products-next {
+  right: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .home-new-products-next {
+    right: -1.25rem;
+  }
+}
+
+html[dir="rtl"] .home-new-products-prev {
+  left: auto;
+  right: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  html[dir="rtl"] .home-new-products-prev {
+    right: -1.25rem;
+  }
+}
+
+html[dir="rtl"] .home-new-products-next {
+  right: auto;
+  left: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  html[dir="rtl"] .home-new-products-next {
+    left: -1.25rem;
+  }
+}
+
 .fixed {
   position: fixed;
 }
