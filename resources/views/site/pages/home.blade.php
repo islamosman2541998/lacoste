@@ -10,4 +10,6 @@
     @include('site.partials.home.featured-products')
 
     @include('site.partials.home.new-products')
+
+    @include('site.partials.home.flash-sales')
 @endsection

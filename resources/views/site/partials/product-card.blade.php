@@ -11,12 +11,23 @@
         ? asset('storage/' . $product->main_image)
         : null;
 
-    $price = (float) $product->price;
-    $salePrice = $product->sale_price ? (float) $product->sale_price : null;
+    $hasFlashSale = (bool) $product->getAttribute('has_flash_sale');
 
-    $hasSale = $salePrice && $salePrice > 0 && $salePrice < $price;
+$price = $hasFlashSale
+    ? (float) $product->getAttribute('flash_sale_original_price')
+    : (float) $product->price;
 
-    $finalPrice = $hasSale ? $salePrice : $price;
+$normalSalePrice = $product->sale_price ? (float) $product->sale_price : null;
+
+$flashSalePrice = $hasFlashSale
+    ? (float) $product->getAttribute('flash_sale_price')
+    : null;
+
+$salePrice = $flashSalePrice ?: $normalSalePrice;
+
+$hasSale = $salePrice && $salePrice > 0 && $salePrice < $price;
+
+$finalPrice = $hasSale ? $salePrice : $price;
 
     $currency = $storeSettings->currency_symbol ?? $storeSettings->currency_code ?? 'EGP';
 
@@ -34,9 +45,9 @@
         ?? $product->brand?->arabicTranslation?->name
         ?? $product->brand?->englishTranslation?->name;
 
-    $discountPercentage = $hasSale
-        ? round((($price - $salePrice) / $price) * 100)
-        : null;
+    $discountPercentage = $hasSale && $price > 0
+    ? round((($price - $salePrice) / $price) * 100)
+    : null;
 @endphp
 
 <div class="product-card group">

@@ -85,7 +85,11 @@ class HomepageSettingService
         return Category::query()
             ->where('is_active', true)
             ->where('is_featured', true)
-            ->with('transNow')
+            ->with([
+                'transNow',
+                'arabicTranslation',
+                'englishTranslation',
+            ])
             ->orderBy('sort_order')
             ->limit($this->settings()->featured_categories_limit)
             ->get();
@@ -102,8 +106,14 @@ class HomepageSettingService
             ->where('is_featured', true)
             ->with([
                 'transNow',
+                'arabicTranslation',
+                'englishTranslation',
                 'brand.transNow',
+                'brand.arabicTranslation',
+                'brand.englishTranslation',
                 'category.transNow',
+                'category.arabicTranslation',
+                'category.englishTranslation',
             ])
             ->latest()
             ->limit($this->settings()->featured_products_limit)
@@ -120,8 +130,14 @@ class HomepageSettingService
             ->where('is_active', true)
             ->with([
                 'transNow',
+                'arabicTranslation',
+                'englishTranslation',
                 'brand.transNow',
+                'brand.arabicTranslation',
+                'brand.englishTranslation',
                 'category.transNow',
+                'category.arabicTranslation',
+                'category.englishTranslation',
             ])
             ->latest()
             ->limit($this->settings()->new_products_limit)
@@ -134,12 +150,68 @@ class HomepageSettingService
             return collect();
         }
 
-        return FlashSale::query()
+        $limit = (int) ($this->settings()->flash_sales_limit ?? 8);
+
+        $flashSales = FlashSale::query()
             ->running()
-            ->with('activeItems.product.transNow')
+            ->with([
+                'activeItems.variant',
+                'activeItems.product.transNow',
+                'activeItems.product.arabicTranslation',
+                'activeItems.product.englishTranslation',
+                'activeItems.product.brand.transNow',
+                'activeItems.product.brand.arabicTranslation',
+                'activeItems.product.brand.englishTranslation',
+                'activeItems.product.category.transNow',
+                'activeItems.product.category.arabicTranslation',
+                'activeItems.product.category.englishTranslation',
+            ])
             ->orderBy('sort_order')
-            ->limit($this->settings()->flash_sales_limit)
             ->get();
+
+        return $flashSales
+            ->flatMap(function ($flashSale) {
+                return $flashSale->activeItems;
+            })
+            ->filter(function ($item) {
+                if (! $item->product) {
+                    return false;
+                }
+
+                if (! $item->product->is_active) {
+                    return false;
+                }
+
+                if (
+                    $item->quantity_limit !== null
+                    && $item->sold_count >= $item->quantity_limit
+                ) {
+                    return false;
+                }
+
+                return true;
+            })
+            ->map(function ($item) {
+                $product = $item->product;
+
+                $originalPrice = $item->variant
+                    ? (float) ($item->variant->price ?: $product->price)
+                    : (float) $product->price;
+
+                $flashSalePrice = $item->calculateSalePrice($originalPrice);
+                $discountAmount = $item->calculateDiscountAmount($originalPrice);
+
+                $product->setAttribute('has_flash_sale', true);
+                $product->setAttribute('flash_sale_price', $flashSalePrice);
+                $product->setAttribute('flash_sale_original_price', $originalPrice);
+                $product->setAttribute('flash_sale_discount_amount', $discountAmount);
+                $product->setAttribute('flash_sale_discount_type', $item->discount_type);
+                $product->setAttribute('flash_sale_discount_value', $item->discount_value);
+
+                return $product;
+            })
+            ->take($limit)
+            ->values();
     }
 
     public function brands()
@@ -151,11 +223,16 @@ class HomepageSettingService
         return Brand::query()
             ->where('is_active', true)
             ->where('is_featured', true)
-            ->with('transNow')
+            ->with([
+                'transNow',
+                'arabicTranslation',
+                'englishTranslation',
+            ])
             ->orderBy('sort_order')
             ->limit($this->settings()->brands_limit)
             ->get();
     }
+
     public function sliders()
     {
         if (! $this->sliderEnabled()) {
@@ -167,6 +244,7 @@ class HomepageSettingService
             ->orderBy('sort_order')
             ->get();
     }
+
     public function homepageData(): array
     {
         return [
