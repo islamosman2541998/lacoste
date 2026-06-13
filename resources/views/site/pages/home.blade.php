@@ -12,4 +12,6 @@
     @include('site.partials.home.new-products')
 
     @include('site.partials.home.flash-sales')
+
+    @include('site.partials.home.brands')
 @endsection

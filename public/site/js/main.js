@@ -764,6 +764,149 @@ if (flashSalesSlider) {
 }
 /*
 |--------------------------------------------------------------------------
+| Brands Slider
+|--------------------------------------------------------------------------
+*/
+const brandsSlider = document.querySelector('[data-brands-slider]');
+const brandsNext = document.querySelector('[data-brands-next]');
+const brandsPrev = document.querySelector('[data-brands-prev]');
+
+if (brandsSlider) {
+    let brandTimer = null;
+    let isBrandDown = false;
+    let brandStartX = 0;
+    let brandScrollLeft = 0;
+
+    function getBrandScrollAmount() {
+        const firstCard = brandsSlider.querySelector('.home-brand-card');
+
+        if (!firstCard) {
+            return 230;
+        }
+
+        const gap = window.innerWidth < 768 ? 16 : 20;
+        const cardsToMove = window.innerWidth < 768 ? 2 : 1;
+
+        return (firstCard.offsetWidth + gap) * cardsToMove;
+    }
+
+    function brandsScrollNext() {
+        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const amount = getBrandScrollAmount();
+
+        brandsSlider.scrollBy({
+            left: isRtl ? -amount : amount,
+            behavior: 'smooth',
+        });
+
+        const maxScroll = brandsSlider.scrollWidth - brandsSlider.clientWidth;
+
+        setTimeout(function () {
+            if (!isRtl && brandsSlider.scrollLeft >= maxScroll - 10) {
+                brandsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+
+            if (isRtl && Math.abs(brandsSlider.scrollLeft) >= maxScroll - 10) {
+                brandsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+        }, 450);
+    }
+
+    function brandsScrollPrev() {
+        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const amount = getBrandScrollAmount();
+
+        brandsSlider.scrollBy({
+            left: isRtl ? amount : -amount,
+            behavior: 'smooth',
+        });
+    }
+
+    function startBrandsAutoPlay() {
+        stopBrandsAutoPlay();
+
+        if (brandsSlider.scrollWidth <= brandsSlider.clientWidth) {
+            return;
+        }
+
+        brandTimer = setInterval(brandsScrollNext, 3800);
+    }
+
+    function stopBrandsAutoPlay() {
+        if (brandTimer) {
+            clearInterval(brandTimer);
+            brandTimer = null;
+        }
+    }
+
+    if (brandsNext) {
+        brandsNext.addEventListener('click', function () {
+            brandsScrollNext();
+            startBrandsAutoPlay();
+        });
+    }
+
+    if (brandsPrev) {
+        brandsPrev.addEventListener('click', function () {
+            brandsScrollPrev();
+            startBrandsAutoPlay();
+        });
+    }
+
+    brandsSlider.addEventListener('mousedown', function (event) {
+        isBrandDown = true;
+        brandsSlider.classList.add('is-dragging');
+        brandStartX = event.pageX - brandsSlider.offsetLeft;
+        brandScrollLeft = brandsSlider.scrollLeft;
+        stopBrandsAutoPlay();
+    });
+
+    brandsSlider.addEventListener('mouseleave', function () {
+        if (!isBrandDown) {
+            return;
+        }
+
+        isBrandDown = false;
+        brandsSlider.classList.remove('is-dragging');
+        startBrandsAutoPlay();
+    });
+
+    brandsSlider.addEventListener('mouseup', function () {
+        isBrandDown = false;
+        brandsSlider.classList.remove('is-dragging');
+        startBrandsAutoPlay();
+    });
+
+    brandsSlider.addEventListener('mousemove', function (event) {
+        if (!isBrandDown) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const x = event.pageX - brandsSlider.offsetLeft;
+        const walk = (x - brandStartX) * 1.4;
+
+        brandsSlider.scrollLeft = brandScrollLeft - walk;
+    });
+
+    brandsSlider.addEventListener('touchstart', function () {
+        stopBrandsAutoPlay();
+    }, { passive: true });
+
+    brandsSlider.addEventListener('touchend', function () {
+        startBrandsAutoPlay();
+    });
+
+    window.addEventListener('resize', function () {
+        startBrandsAutoPlay();
+    });
+
+    startBrandsAutoPlay();
+}
+
+/*
+|--------------------------------------------------------------------------
 | Site Toast
 |--------------------------------------------------------------------------
 */

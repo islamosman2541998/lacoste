@@ -821,6 +821,206 @@
     .home-flash-sales-section .product-card {
         @apply border-white/10;
     }
+        /*
+    |--------------------------------------------------------------------------
+    | Brands Slider
+    |--------------------------------------------------------------------------
+    */
+    .home-brands-section {
+        @apply bg-white py-12 md:py-16;
+    }
+
+    .home-brands-slider-wrap {
+        @apply relative;
+    }
+
+    .home-brands-slider {
+        @apply flex gap-4 overflow-x-auto scroll-smooth pb-5 md:gap-5;
+        cursor: grab;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        touch-action: pan-y;
+        scroll-snap-type: x mandatory;
+    }
+
+    .home-brands-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+    .home-brands-slider.is-dragging {
+        cursor: grabbing;
+        scroll-behavior: auto;
+    }
+
+    .home-brand-card {
+        @apply block shrink-0 rounded-[24px] border border-gray-100 bg-white p-4 text-center shadow-sm transition duration-300 hover:-translate-y-1 hover:border-brand hover:shadow-soft;
+        width: calc((100% - 1rem) / 2);
+        scroll-snap-align: start;
+    }
+
+    @media (min-width: 640px) {
+        .home-brand-card {
+            width: calc((100% - 2rem) / 3);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .home-brand-card {
+            width: calc((100% - 3.75rem) / 4);
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .home-brand-card {
+            width: calc((100% - 5rem) / 5);
+        }
+    }
+
+    .home-brand-logo-wrap {
+        @apply mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-orange-50 transition group-hover:bg-orange-100;
+    }
+
+    .home-brand-logo {
+        @apply max-h-16 max-w-16 object-contain transition duration-300 group-hover:scale-110;
+    }
+
+    .home-brand-placeholder {
+        @apply flex h-full w-full items-center justify-center text-4xl font-black text-brand;
+    }
+
+    .home-brand-content {
+        @apply pt-4;
+    }
+
+    .home-brand-content h3 {
+        @apply line-clamp-1 text-sm font-black text-dark transition group-hover:text-brand md:text-base;
+    }
+
+    .home-brand-content p {
+        @apply mt-1 line-clamp-1 text-xs leading-5 text-muted;
+    }
+
+    .home-brands-arrow {
+        @apply absolute top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-2xl font-bold text-dark shadow-soft transition hover:bg-brand hover:text-white md:h-11 md:w-11 md:text-3xl;
+    }
+
+    .home-brands-prev {
+        @apply left-1 md:-left-5;
+    }
+
+    .home-brands-next {
+        @apply right-1 md:-right-5;
+    }
+
+    html[dir="rtl"] .home-brands-prev {
+        @apply left-auto right-1 md:-right-5;
+    }
+
+    html[dir="rtl"] .home-brands-next {
+        @apply right-auto left-1 md:-left-5;
+    }
+        /*
+    |--------------------------------------------------------------------------
+    | Footer
+    |--------------------------------------------------------------------------
+    */
+    .site-footer {
+        @apply bg-dark pt-12 text-white md:pt-16;
+    }
+
+   .footer-newsletter-column p {
+    @apply mb-4 text-sm leading-6 text-white/60;
+}
+
+.footer-mini-newsletter-form {
+    @apply flex flex-col gap-2;
+}
+
+.footer-mini-newsletter-input {
+    @apply h-11 rounded-2xl border border-white/10 bg-white/10 px-4 text-sm font-semibold text-white outline-none placeholder:text-white/40 focus:border-brand;
+}
+
+.footer-mini-newsletter-btn {
+    @apply h-11 rounded-2xl bg-brand px-4 text-sm font-black text-white transition hover:bg-brand-dark;
+}
+
+.footer-payment-item {
+    @apply inline-flex min-h-8 items-center justify-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-black text-white/70;
+}
+
+.footer-payment-item img {
+    @apply h-5 w-auto max-w-16 object-contain;
+}
+
+ .footer-main {
+    @apply grid gap-10 border-b border-white/10 pb-10 md:grid-cols-[1.1fr_2.4fr];
+}
+
+    .footer-brand {
+        @apply max-w-md;
+    }
+
+    .footer-logo-link {
+        @apply inline-flex items-center;
+    }
+
+    .footer-logo {
+        @apply h-14 w-auto max-w-40 object-contain;
+    }
+
+    .footer-logo-text {
+        @apply text-2xl font-black text-white;
+    }
+
+    .footer-brand h3 {
+        @apply mt-5 text-xl font-black;
+    }
+
+    .footer-brand p {
+        @apply mt-3 text-sm leading-7 text-white/60;
+    }
+
+    .footer-socials {
+        @apply mt-6 flex flex-wrap gap-3;
+    }
+
+  .footer-social-link {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white transition hover:border-brand hover:bg-brand;
+}
+
+.footer-social-link svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    display: block;
+}
+
+  .footer-links-grid {
+    @apply grid grid-cols-2 gap-8 md:grid-cols-4;
+}
+
+    .footer-links-column h4 {
+        @apply mb-4 text-sm font-black text-white;
+    }
+
+    .footer-links-column ul {
+        @apply space-y-3;
+    }
+
+    .footer-links-column a {
+        @apply text-sm font-semibold text-white/60 transition hover:text-brand;
+    }
+
+    .footer-bottom {
+        @apply flex flex-col gap-4 py-6 text-sm font-semibold text-white/50 md:flex-row md:items-center md:justify-between;
+    }
+
+    .footer-payments {
+        @apply flex flex-wrap gap-2;
+    }
+
+    .footer-payments span {
+        @apply rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-black text-white/70;
+    }
 }
 
 @keyframes announcement-marquee-ltr {
