@@ -1099,6 +1099,409 @@
         align-items: center;
         justify-content: center;
     }
+        /*
+    |--------------------------------------------------------------------------
+    | Shop Page - Livewire
+    |--------------------------------------------------------------------------
+    */
+    .shop-page {
+        @apply bg-soft pb-16 pt-36 md:pt-40;
+    }
+
+    .shop-hero {
+        @apply mb-6 rounded-[30px] bg-dark p-6 text-white shadow-soft md:p-8;
+    }
+
+    .shop-breadcrumb {
+        @apply mb-4 flex items-center gap-2 text-xs font-bold text-white/50;
+    }
+
+    .shop-breadcrumb a {
+        @apply text-white/60 hover:text-brand;
+    }
+
+    .shop-hero h1 {
+        @apply text-3xl font-black md:text-5xl;
+    }
+
+    .shop-hero p {
+        @apply mt-4 max-w-2xl text-sm leading-7 text-white/65 md:text-base;
+    }
+
+    .shop-mobile-toolbar {
+        @apply sticky top-24 z-30 mb-5 rounded-[24px] border border-gray-100 bg-white/95 p-3 shadow-soft backdrop-blur lg:hidden;
+    }
+
+    .shop-mobile-search {
+        @apply flex h-12 items-center gap-2 rounded-2xl bg-soft px-3;
+    }
+
+    .shop-mobile-search input {
+        @apply h-full flex-1 bg-transparent text-sm font-bold outline-none placeholder:text-gray-400;
+    }
+
+    .shop-mobile-search button {
+        @apply inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-muted;
+    }
+
+    .shop-mobile-actions {
+        @apply mt-3 grid grid-cols-2 gap-3;
+    }
+
+    .shop-mobile-actions button,
+    .shop-mobile-actions select {
+        @apply flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white px-4 text-sm font-black text-dark outline-none;
+    }
+
+    .shop-active-filters {
+        @apply mb-5 flex flex-wrap items-center gap-2;
+    }
+
+    .shop-active-filters button {
+        @apply inline-flex items-center gap-2 rounded-full bg-orange-50 px-4 py-2 text-xs font-black text-brand;
+    }
+
+    .shop-active-filters button span {
+        @apply text-base leading-none;
+    }
+
+    .shop-active-filters .clear-all {
+        @apply bg-dark text-white;
+    }
+
+    .shop-layout {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 1024px) {
+        .shop-layout {
+            grid-template-columns: 280px minmax(0, 1fr);
+            grid-template-areas: "filters products";
+        }
+
+        html[dir="rtl"] .shop-layout {
+            grid-template-columns: minmax(0, 1fr) 280px;
+            grid-template-areas: "products filters";
+        }
+    }
+
+    .shop-sidebar {
+        grid-area: filters;
+        display: none;
+    }
+
+    @media (min-width: 1024px) {
+        .shop-sidebar {
+            display: block;
+        }
+    }
+
+    .shop-content {
+        grid-area: products;
+        min-width: 0;
+    }
+
+    .shop-toolbar {
+        @apply mb-5 hidden items-center justify-between gap-4 rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm lg:flex;
+    }
+
+    .shop-toolbar > div:first-child {
+        @apply min-w-max text-sm text-muted;
+    }
+
+    .shop-toolbar strong {
+        @apply text-dark;
+    }
+
+    .shop-toolbar select {
+        @apply h-11 rounded-2xl border border-gray-100 bg-soft px-4 text-sm font-black text-dark outline-none;
+    }
+
+    .shop-desktop-search {
+        @apply flex h-11 max-w-md flex-1 items-center rounded-2xl bg-soft px-4;
+    }
+
+    .shop-desktop-search input {
+        @apply h-full w-full bg-transparent text-sm font-bold outline-none placeholder:text-gray-400;
+    }
+
+    .shop-products-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        .shop-products-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .shop-products-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    .shop-products-grid .product-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: initial !important;
+        flex-shrink: 1 !important;
+    }
+
+    .shop-results-wrap {
+        @apply relative;
+    }
+
+    .shop-results-wrap.is-loading {
+        @apply opacity-60;
+    }
+
+    .shop-loading {
+        @apply absolute inset-0 z-20 hidden items-start justify-center gap-3 rounded-[24px] bg-white/60 pt-20 backdrop-blur-sm;
+    }
+
+    .shop-loading span {
+        @apply h-5 w-5 animate-spin rounded-full border-2 border-brand border-t-transparent;
+    }
+
+    .shop-loading p {
+        @apply text-sm font-black text-dark;
+    }
+
+    .shop-pagination {
+        @apply mt-8;
+    }
+
+    .shop-filter-form {
+        @apply rounded-[26px] border border-gray-100 bg-white p-5 shadow-sm;
+    }
+
+    .shop-filter-block {
+        @apply border-b border-gray-100 py-5 first:pt-0 last:border-b-0 last:pb-0;
+    }
+
+    .shop-filter-block h4 {
+        @apply mb-4 text-sm font-black text-dark;
+    }
+
+    .shop-filter-list {
+        @apply max-h-64 space-y-2 overflow-y-auto pr-1;
+    }
+
+    html[dir="rtl"] .shop-filter-list {
+        @apply pr-0 pl-1;
+    }
+
+    .shop-filter-option,
+    .shop-filter-sale {
+        @apply flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2 text-sm font-bold text-muted transition hover:bg-orange-50 hover:text-brand;
+    }
+
+    .shop-filter-option input,
+    .shop-filter-sale input {
+        @apply h-4 w-4 accent-brand;
+    }
+
+    .shop-price-inputs {
+        @apply grid grid-cols-2 gap-3;
+    }
+
+    .shop-price-inputs input {
+        @apply h-11 rounded-2xl border border-gray-100 bg-soft px-3 text-sm font-bold outline-none focus:border-brand;
+    }
+
+    .shop-filter-actions {
+        @apply mt-5 flex items-center gap-3;
+    }
+
+    .shop-filter-actions button {
+        @apply h-11 flex-1 rounded-2xl bg-brand px-4 text-sm font-black text-white transition hover:bg-brand-dark;
+    }
+
+    .shop-filter-actions .shop-filter-clear-btn {
+        @apply bg-soft text-dark hover:bg-gray-100;
+    }
+
+    .shop-filter-drawer {
+        @apply fixed inset-0 z-[9999] hidden lg:hidden;
+    }
+
+    .shop-filter-drawer.is-open {
+        @apply block;
+    }
+
+    .shop-filter-backdrop {
+        @apply absolute inset-0 block h-full w-full bg-black/50 backdrop-blur-sm;
+    }
+
+    .shop-filter-panel {
+        @apply absolute bottom-0 left-0 right-0 max-h-[86vh] overflow-y-auto rounded-t-[30px] bg-white p-5 shadow-soft;
+    }
+
+    .shop-filter-panel-head {
+        @apply sticky top-0 z-10 mb-4 flex items-center justify-between bg-white pb-3;
+    }
+
+    .shop-filter-panel-head h3 {
+        @apply text-lg font-black text-dark;
+    }
+
+    .shop-filter-panel-head button {
+        @apply flex h-10 w-10 items-center justify-center rounded-full bg-soft text-2xl font-bold text-dark;
+    }
+
+    .shop-filter-panel .shop-filter-form {
+        @apply border-0 p-0 shadow-none;
+    }
+
+    .shop-empty {
+        @apply rounded-[30px] border border-gray-100 bg-white p-10 text-center shadow-sm;
+    }
+
+    .shop-empty-icon {
+        @apply mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-50 text-brand;
+    }
+
+    .shop-empty h3 {
+        @apply text-xl font-black text-dark;
+    }
+
+    .shop-empty p {
+        @apply mx-auto mt-3 max-w-md text-sm leading-7 text-muted;
+    }
+
+    .shop-empty button {
+        @apply mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand px-6 text-sm font-black text-white;
+    }
+        /*
+    |--------------------------------------------------------------------------
+    | Shop Livewire Pagination
+    |--------------------------------------------------------------------------
+    */
+    .shop-live-pagination {
+        @apply mt-8 flex flex-wrap items-center justify-center gap-2;
+    }
+
+    .shop-page-btn,
+    .shop-page-number {
+        @apply inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white px-4 text-sm font-black text-dark shadow-sm transition hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:opacity-40;
+    }
+
+    .shop-page-number.is-active {
+        @apply border-brand bg-brand text-white hover:text-white;
+    }
+
+    .shop-page-dots {
+        @apply inline-flex h-11 items-center justify-center px-2 text-sm font-black text-muted;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shop Price Range Slider
+    |--------------------------------------------------------------------------
+    */
+    .shop-price-values {
+        @apply mb-5 grid grid-cols-2 gap-3;
+    }
+
+    .shop-price-values div {
+        @apply rounded-2xl bg-soft p-3;
+    }
+
+    .shop-price-values span {
+        @apply block text-xs font-bold text-muted;
+    }
+
+    .shop-price-values strong {
+        @apply mt-1 block text-sm font-black text-dark;
+    }
+
+    .shop-price-range {
+        position: relative;
+        height: 2.75rem;
+        direction: ltr;
+    }
+
+    .shop-price-range-track {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 0.42rem;
+        transform: translateY(-50%);
+        border-radius: 9999px;
+        background: #f3f4f6;
+        overflow: hidden;
+    }
+
+    .shop-price-range-selected {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--range-left);
+        right: var(--range-right);
+        border-radius: 9999px;
+        background: var(--site-brand);
+    }
+
+    .shop-price-range input[type="range"] {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 2.75rem;
+        transform: translateY(-50%);
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        pointer-events: none;
+        outline: none;
+    }
+
+    .shop-price-range input[type="range"]::-webkit-slider-thumb {
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 9999px;
+        border: 0.25rem solid white;
+        background: var(--site-brand);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+        cursor: pointer;
+        pointer-events: auto;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .shop-price-range input[type="range"]::-moz-range-thumb {
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 9999px;
+        border: 0.25rem solid white;
+        background: var(--site-brand);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+        cursor: pointer;
+        pointer-events: auto;
+    }
+
+    .shop-price-range input[type="range"]::-webkit-slider-runnable-track {
+        height: 0.42rem;
+        background: transparent;
+    }
+
+    .shop-price-range input[type="range"]::-moz-range-track {
+        height: 0.42rem;
+        background: transparent;
+    }
+
+    .shop-price-clear {
+        @apply mt-3 w-full rounded-2xl bg-orange-50 px-4 py-3 text-xs font-black text-brand transition hover:bg-orange-100;
+    }
+    .shop-scroll-anchor {
+    scroll-margin-top: 150px;
+}
 }
 
 @keyframes announcement-marquee-ltr {
