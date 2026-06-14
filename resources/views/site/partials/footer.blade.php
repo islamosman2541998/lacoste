@@ -211,7 +211,7 @@
 
         <div class="footer-bottom">
             <div>
-                © {{ date('Y') }} {{ $footerTitle }}. {{ $copyright }}
+                ©  {{ $copyright }}
             </div>
 
            @if ($showPaymentMethods && $paymentMethodsCollection->count())
