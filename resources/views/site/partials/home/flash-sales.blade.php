@@ -6,6 +6,8 @@
     ];
 
     $products = $flashSales['items'] ?? collect();
+
+    $flashSalesUrl = route('site.shop', ['sale' => 1]);
 @endphp
 
 @if (($flashSales['enabled'] ?? false) && $products->count())
@@ -32,6 +34,13 @@
                     <span>
                         {{ app()->getLocale() === 'ar' ? 'خصومات الآن' : 'Live Deals' }}
                     </span>
+
+                    <a
+                        href="{{ $flashSalesUrl }}"
+                        class="mt-3 inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-xs font-black text-dark transition hover:bg-brand hover:text-white"
+                    >
+                        {{ app()->getLocale() === 'ar' ? 'عرض كل العروض' : 'View all deals' }}
+                    </a>
                 </div>
             </div>
 
@@ -49,7 +58,10 @@
 
                 <div class="home-flash-sales-slider" data-flash-sales-slider>
                     @foreach ($products as $product)
-                        @include('site.partials.product-card', ['product' => $product])
+                        @include('site.partials.product-card', [
+                            'product' => $product,
+                            'cardKey' => 'flash-product-' . $product->id,
+                        ])
                     @endforeach
                 </div>
 

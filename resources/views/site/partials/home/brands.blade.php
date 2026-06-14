@@ -58,7 +58,7 @@
                                 : '#';
                         @endphp
 
-                        <a href="{{ $brandUrl }}" class="home-brand-card group">
+                        <a href="{{ route('site.shop', ['brand' => $brand->id]) }}" class="home-brand-card group">
                             <div class="home-brand-logo-wrap">
                                 @if ($brand->logo)
                                     <img

@@ -43,23 +43,20 @@
 
                             $description =
                                 $category->transNow?->description ??
-                                ($category->arabicTranslation?->description ?? $category->englishTranslation?->description);
+                                ($category->arabicTranslation?->description ??
+                                    $category->englishTranslation?->description);
 
                             $categoryUrl = \Illuminate\Support\Facades\Route::has('site.categories.show')
                                 ? route('site.categories.show', $category->id)
                                 : '#';
                         @endphp
 
-                        <a href="{{ $categoryUrl }}" class="home-category-card group">
+                        <a href="{{ route('site.shop', ['category' => $category->id]) }}"
+                            class="home-category-card group">
                             <div class="home-category-image-wrap">
                                 @if ($category->image)
-                                    <img
-                                        src="{{ asset('storage/' . $category->image) }}"
-                                        alt="{{ $name }}"
-                                        class="home-category-image"
-                                        loading="lazy"
-                                        draggable="false"
-                                    >
+                                    <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $name }}"
+                                        class="home-category-image" loading="lazy" draggable="false">
                                 @else
                                     <div class="home-category-placeholder">
                                         {{ mb_substr($name, 0, 1) }}

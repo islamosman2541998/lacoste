@@ -13,21 +13,21 @@
 
     $hasFlashSale = (bool) $product->getAttribute('has_flash_sale');
 
-$price = $hasFlashSale
-    ? (float) $product->getAttribute('flash_sale_original_price')
-    : (float) $product->price;
+    $price = $hasFlashSale
+        ? (float) $product->getAttribute('flash_sale_original_price')
+        : (float) $product->price;
 
-$normalSalePrice = $product->sale_price ? (float) $product->sale_price : null;
+    $normalSalePrice = $product->sale_price ? (float) $product->sale_price : null;
 
-$flashSalePrice = $hasFlashSale
-    ? (float) $product->getAttribute('flash_sale_price')
-    : null;
+    $flashSalePrice = $hasFlashSale
+        ? (float) $product->getAttribute('flash_sale_price')
+        : null;
 
-$salePrice = $flashSalePrice ?: $normalSalePrice;
+    $salePrice = $flashSalePrice ?: $normalSalePrice;
 
-$hasSale = $salePrice && $salePrice > 0 && $salePrice < $price;
+    $hasSale = $salePrice && $salePrice > 0 && $salePrice < $price;
 
-$finalPrice = $hasSale ? $salePrice : $price;
+    $finalPrice = $hasSale ? $salePrice : $price;
 
     $currency = $storeSettings->currency_symbol ?? $storeSettings->currency_code ?? 'EGP';
 
@@ -45,9 +45,19 @@ $finalPrice = $hasSale ? $salePrice : $price;
         ?? $product->brand?->arabicTranslation?->name
         ?? $product->brand?->englishTranslation?->name;
 
+    $categoryUrl = $product->category_id
+        ? route('site.shop', ['category' => $product->category_id])
+        : '#';
+
+    $brandUrl = $product->brand_id
+        ? route('site.shop', ['brand' => $product->brand_id])
+        : '#';
+
     $discountPercentage = $hasSale && $price > 0
-    ? round((($price - $salePrice) / $price) * 100)
-    : null;
+        ? round((($price - $salePrice) / $price) * 100)
+        : null;
+
+    $cardKey = $cardKey ?? 'product-card-' . $product->id;
 @endphp
 
 <div class="product-card group">
@@ -76,7 +86,7 @@ $finalPrice = $hasSale ? $salePrice : $price;
             @endif
 
             <div class="product-card-wishlist">
-                @livewire('site.wishlist-button', ['productId' => $product->id], key('wishlist-' . $product->id))
+                @livewire('site.wishlist-button', ['productId' => $product->id], key('wishlist-' . $cardKey))
             </div>
         </div>
 
@@ -90,15 +100,23 @@ $finalPrice = $hasSale ? $salePrice : $price;
     <div class="product-card-body">
         <div class="product-card-meta">
             @if ($categoryName)
-                <span class="product-card-category">
+                <a
+                    href="{{ $categoryUrl }}"
+                    class="product-card-category"
+                    title="{{ app()->getLocale() === 'ar' ? 'عرض منتجات هذا القسم' : 'View category products' }}"
+                >
                     {{ $categoryName }}
-                </span>
+                </a>
             @endif
 
             @if ($brandName)
-                <span class="product-card-brand">
+                <a
+                    href="{{ $brandUrl }}"
+                    class="product-card-brand"
+                    title="{{ app()->getLocale() === 'ar' ? 'عرض منتجات هذا البراند' : 'View brand products' }}"
+                >
                     {{ $brandName }}
-                </span>
+                </a>
             @endif
         </div>
 
@@ -127,7 +145,7 @@ $finalPrice = $hasSale ? $salePrice : $price;
                 @endif
             </div>
 
-            @livewire('site.add-to-cart-button', ['productId' => $product->id], key('add-to-cart-' . $product->id))
+            @livewire('site.add-to-cart-button', ['productId' => $product->id], key('add-to-cart-' . $cardKey))
         </div>
     </div>
 </div>

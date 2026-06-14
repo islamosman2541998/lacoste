@@ -30,6 +30,8 @@ class ShopPage extends Component
 
     #[Url(as: 'sale', except: false)]
     public bool $sale = false;
+    #[Url(as: 'featured', except: false)]
+public bool $featured = false;
 
     #[Url(as: 'sort', except: 'newest')]
     public string $sort = 'newest';
@@ -40,15 +42,16 @@ class ShopPage extends Component
 
     public function updated($property): void
     {
-        if (in_array($property, [
-            'q',
-            'category',
-            'brand',
-            'min_price',
-            'max_price',
-            'sale',
-            'sort',
-        ])) {
+      if (in_array($property, [
+    'q',
+    'category',
+    'brand',
+    'min_price',
+    'max_price',
+    'sale',
+    'featured',
+    'sort',
+])) {
             $this->resetPage();
         }
     }
@@ -65,14 +68,15 @@ class ShopPage extends Component
 
     public function clearFilters(): void
     {
-        $this->reset([
-            'q',
-            'category',
-            'brand',
-            'min_price',
-            'max_price',
-            'sale',
-        ]);
+      $this->reset([
+    'q',
+    'category',
+    'brand',
+    'min_price',
+    'max_price',
+    'sale',
+    'featured',
+]);
 
         $this->sort = 'newest';
 
@@ -296,7 +300,9 @@ public function previousShopPage(): void
             $productsQuery->whereNotNull('sale_price')
                 ->whereColumn('sale_price', '<', 'price');
         }
-
+if ($this->featured) {
+    $productsQuery->where('is_featured', true);
+}
         match ($this->sort) {
             'price_asc' => $productsQuery->orderByRaw('COALESCE(NULLIF(sale_price, 0), price) ASC'),
             'price_desc' => $productsQuery->orderByRaw('COALESCE(NULLIF(sale_price, 0), price) DESC'),

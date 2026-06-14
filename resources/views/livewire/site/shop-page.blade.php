@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        @if ($q || $category || $brand || $min_price || $max_price || $sale)
+        @if ($q || $category || $brand || $min_price || $max_price || $sale || $featured)
             <div class="shop-active-filters">
                 @if ($q)
                     <button type="button" wire:click="removeFilter('q')">
@@ -106,7 +106,12 @@
                         <span>×</span>
                     </button>
                 @endif
-
+                @if ($featured)
+                    <button type="button" wire:click="removeFilter('featured')">
+                        {{ app()->getLocale() === 'ar' ? 'منتجات مميزة' : 'Featured products' }}
+                        <span>×</span>
+                    </button>
+                @endif
                 <button type="button" class="clear-all" wire:click="clearFilters">
                     {{ app()->getLocale() === 'ar' ? 'مسح الكل' : 'Clear all' }}
                 </button>
@@ -119,7 +124,7 @@
             </aside>
 
             <div class="shop-content">
-                    <div id="shop-products-top" class="shop-scroll-anchor"></div>
+                <div id="shop-products-top" class="shop-scroll-anchor"></div>
 
                 <div class="shop-toolbar">
                     <div>
@@ -270,18 +275,18 @@
     </div>
 </section>
 @script
-<script>
-    $wire.on('shop-scroll-to-products', function () {
-        setTimeout(function () {
-            const target = document.getElementById('shop-products-top');
+    <script>
+        $wire.on('shop-scroll-to-products', function() {
+            setTimeout(function() {
+                const target = document.getElementById('shop-products-top');
 
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        }, 120);
-    });
-</script>
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }, 120);
+        });
+    </script>
 @endscript

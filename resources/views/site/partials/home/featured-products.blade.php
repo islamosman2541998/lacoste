@@ -6,6 +6,8 @@
     ];
 
     $products = $featuredProducts['items'] ?? collect();
+
+    $featuredProductsUrl = route('site.shop', ['featured' => 1]);
 @endphp
 
 @if (($featuredProducts['enabled'] ?? false) && $products->count())
@@ -25,6 +27,13 @@
                         ? 'منتجات مختارة بعناية لتجربة تسوق أفضل.'
                         : 'Carefully selected products for a better shopping experience.' }}
                 </p>
+
+                <a
+                    href="{{ $featuredProductsUrl }}"
+                    class="mt-4 inline-flex items-center justify-center rounded-full bg-dark px-6 py-3 text-xs font-black text-white transition hover:bg-brand"
+                >
+                    {{ app()->getLocale() === 'ar' ? 'عرض المنتجات المميزة' : 'View featured products' }}
+                </a>
             </div>
 
             <div class="home-products-slider-wrap">
@@ -41,7 +50,10 @@
 
                 <div class="home-products-slider" data-products-slider>
                     @foreach ($products as $product)
-                        @include('site.partials.product-card', ['product' => $product])
+                        @include('site.partials.product-card', [
+                            'product' => $product,
+                            'cardKey' => 'featured-product-' . $product->id,
+                        ])
                     @endforeach
                 </div>
 

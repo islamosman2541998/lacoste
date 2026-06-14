@@ -6,6 +6,8 @@
     ];
 
     $products = $newProducts['items'] ?? collect();
+
+    $newProductsUrl = route('site.shop', ['sort' => 'newest']);
 @endphp
 
 @if (($newProducts['enabled'] ?? false) && $products->count())
@@ -25,6 +27,13 @@
                         ? 'اكتشف أحدث المنتجات المضافة للمتجر بتصميمات عصرية ومميزة.'
                         : 'Discover the latest products added to the store with fresh modern styles.' }}
                 </p>
+
+                <a
+                    href="{{ $newProductsUrl }}"
+                    class="mt-4 inline-flex items-center justify-center rounded-full bg-dark px-6 py-3 text-xs font-black text-white transition hover:bg-brand"
+                >
+                    {{ app()->getLocale() === 'ar' ? 'عرض أحدث المنتجات' : 'View new arrivals' }}
+                </a>
             </div>
 
             <div class="home-new-products-slider-wrap">
@@ -41,7 +50,10 @@
 
                 <div class="home-new-products-slider" data-new-products-slider>
                     @foreach ($products as $product)
-                        @include('site.partials.product-card', ['product' => $product])
+                        @include('site.partials.product-card', [
+                            'product' => $product,
+                            'cardKey' => 'new-product-' . $product->id,
+                        ])
                     @endforeach
                 </div>
 
