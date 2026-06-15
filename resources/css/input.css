@@ -1721,60 +1721,60 @@
     }
 
     .product-show-description-box div {
-    @apply max-w-none text-sm leading-8 text-muted md:text-base;
-}
+        @apply max-w-none text-sm leading-8 text-muted md:text-base;
+    }
 
-.product-show-description-box div p {
-    @apply mb-4;
-}
+    .product-show-description-box div p {
+        @apply mb-4;
+    }
 
-.product-show-description-box div ul {
-    @apply mb-4 list-disc space-y-2 ps-6;
-}
+    .product-show-description-box div ul {
+        @apply mb-4 list-disc space-y-2 ps-6;
+    }
 
-.product-show-description-box div ol {
-    @apply mb-4 list-decimal space-y-2 ps-6;
-}
+    .product-show-description-box div ol {
+        @apply mb-4 list-decimal space-y-2 ps-6;
+    }
 
-.product-show-description-box div li {
-    @apply leading-8;
-}
+    .product-show-description-box div li {
+        @apply leading-8;
+    }
 
-.product-show-description-box div strong,
-.product-show-description-box div b {
-    @apply font-black text-dark;
-}
+    .product-show-description-box div strong,
+    .product-show-description-box div b {
+        @apply font-black text-dark;
+    }
 
-.product-show-description-box div h1,
-.product-show-description-box div h2,
-.product-show-description-box div h3,
-.product-show-description-box div h4 {
-    @apply mb-3 mt-6 font-black text-dark;
-}
+    .product-show-description-box div h1,
+    .product-show-description-box div h2,
+    .product-show-description-box div h3,
+    .product-show-description-box div h4 {
+        @apply mb-3 mt-6 font-black text-dark;
+    }
 
-.product-show-description-box div h1 {
-    @apply text-2xl;
-}
+    .product-show-description-box div h1 {
+        @apply text-2xl;
+    }
 
-.product-show-description-box div h2 {
-    @apply text-xl;
-}
+    .product-show-description-box div h2 {
+        @apply text-xl;
+    }
 
-.product-show-description-box div h3 {
-    @apply text-lg;
-}
+    .product-show-description-box div h3 {
+        @apply text-lg;
+    }
 
-.product-show-description-box div a {
-    @apply font-bold text-brand underline-offset-4 hover:underline;
-}
+    .product-show-description-box div a {
+        @apply font-bold text-brand underline-offset-4 hover:underline;
+    }
 
-.product-show-description-box div img {
-    @apply my-5 rounded-3xl;
-}
+    .product-show-description-box div img {
+        @apply my-5 rounded-3xl;
+    }
 
-html[dir="rtl"] .product-show-description-box div {
-    direction: rtl;
-}
+    html[dir="rtl"] .product-show-description-box div {
+        direction: rtl;
+    }
 
     .product-show-related {
         @apply mt-12;
@@ -1791,10 +1791,10 @@ html[dir="rtl"] .product-show-description-box div {
         flex: initial !important;
     }
 
-   .product-show-mobile-bar {
-    @apply fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-3 border-t border-gray-100 bg-white/95 px-4 py-3 backdrop-blur lg:hidden;
-    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.12);
-}
+    .product-show-mobile-bar {
+        @apply fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-3 border-t border-gray-100 bg-white/95 px-4 py-3 backdrop-blur lg:hidden;
+        box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.12);
+    }
 
     .product-show-mobile-bar div:first-child {
         @apply min-w-0;
@@ -1814,6 +1814,51 @@ html[dir="rtl"] .product-show-description-box div {
 
     .product-show-mobile-bar button {
         @apply h-11;
+    }
+
+    /*
+|--------------------------------------------------------------------------
+| Add To Cart Added State Fix
+|--------------------------------------------------------------------------
+*/
+    .add-to-cart-btn.is-added {
+        background: var(--site-brand) !important;
+        border-color: var(--site-brand) !important;
+        color: #ffffff !important;
+    }
+
+    .add-to-cart-btn.is-added .add-to-cart-icon,
+    .add-to-cart-btn.is-added .add-to-cart-text {
+        color: #ffffff !important;
+    }
+
+    /*
+|--------------------------------------------------------------------------
+| Product Mobile Sticky Add To Cart
+|--------------------------------------------------------------------------
+*/
+    .product-show-mobile-bar .add-to-cart-btn {
+        width: 100%;
+        background: var(--site-dark);
+        color: #ffffff;
+    }
+
+    .product-show-mobile-bar .add-to-cart-btn .add-to-cart-icon {
+        color: var(--site-brand);
+    }
+
+    .product-show-mobile-bar .add-to-cart-btn .add-to-cart-text {
+        color: inherit;
+    }
+
+    .product-show-mobile-bar .add-to-cart-btn.is-added {
+        background: var(--site-brand) !important;
+        color: #ffffff !important;
+    }
+
+    .product-show-mobile-bar .add-to-cart-btn.is-added .add-to-cart-icon,
+    .product-show-mobile-bar .add-to-cart-btn.is-added .add-to-cart-text {
+        color: #ffffff !important;
     }
 }
 
