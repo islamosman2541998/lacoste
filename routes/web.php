@@ -1,10 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\InvoicePrintController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\PageController;
+use App\Http\Controllers\Site\ProductController;
 use App\Http\Controllers\Site\ShopController;
+use Illuminate\Support\Facades\Route;
 
 
 
@@ -17,6 +18,7 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     });
 
     Route::view('/shop', 'site.pages.shop.index')->name('site.shop');
+    Route::get('/product/{slug}', [ProductController::class, 'show'])->name('site.products.show');
 Route::get('/switch-language/{locale}', function ($locale) {
     if (! in_array($locale, ['en', 'ar'])) {
         abort(400);
