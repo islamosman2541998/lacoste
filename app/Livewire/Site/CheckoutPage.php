@@ -12,6 +12,7 @@ use App\Models\PaymentMethodDisplay;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ShippingCity;
+use App\Services\StoreNotificationService;
 use App\Models\StoreSetting;
 use App\Services\CouponService;
 use App\Services\FreeShippingService;
@@ -76,7 +77,8 @@ class CheckoutPage extends Component
         $code = strtoupper(trim($this->coupon_code));
 
         if (! $code) {
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'error',
                 icon: '!',
                 title: app()->getLocale() === 'ar' ? 'كود غير صحيح' : 'Invalid coupon',
@@ -93,7 +95,8 @@ class CheckoutPage extends Component
             ->first();
 
         if (! $coupon || ! $coupon->isValidForAmount((float) $cart->subtotal)) {
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'error',
                 icon: '!',
                 title: app()->getLocale() === 'ar' ? 'كوبون غير صالح' : 'Invalid coupon',
@@ -109,7 +112,8 @@ class CheckoutPage extends Component
         $this->coupon_discount_total = $coupon->calculateDiscount((float) $cart->subtotal);
         $this->coupon_free_shipping = (bool) $coupon->free_shipping;
 
-        $this->dispatch('site-toast',
+        $this->dispatch(
+            'site-toast',
             type: 'success',
             icon: '✓',
             title: app()->getLocale() === 'ar' ? 'تم تطبيق الكوبون' : 'Coupon applied',
@@ -155,7 +159,8 @@ class CheckoutPage extends Component
         ]);
 
         if (! app(PaymentSettingsService::class)->isPaymentMethodEnabled($this->payment_method)) {
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'error',
                 icon: '!',
                 title: app()->getLocale() === 'ar' ? 'وسيلة دفع غير متاحة' : 'Payment unavailable',
@@ -170,7 +175,8 @@ class CheckoutPage extends Component
         $cart = $this->cart();
 
         if (! $cart || ! $cart->items()->count()) {
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'error',
                 icon: '!',
                 title: app()->getLocale() === 'ar' ? 'السلة فارغة' : 'Empty cart',
@@ -324,13 +330,16 @@ class CheckoutPage extends Component
                     'last_activity_at' => now(),
                 ]);
 
+                session()->put('last_order_number', $orderNumber);
+
                 $this->orderPlaced = true;
                 $this->orderNumber = $orderNumber;
 
                 $this->dispatch('cart-updated');
             });
 
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'success',
                 icon: '✓',
                 title: app()->getLocale() === 'ar' ? 'تم إنشاء الطلب' : 'Order placed',
@@ -338,17 +347,34 @@ class CheckoutPage extends Component
                     ? 'تم إنشاء طلبك بنجاح'
                     : 'Your order has been placed successfully'
             );
+            $createdOrder = Order::query()
+                ->where('order_number', $this->orderNumber)
+                ->first();
+
+            if ($createdOrder) {
+                app(StoreNotificationService::class)->notifyAdminNewOrder($createdOrder);
+                app(StoreNotificationService::class)->notifyCustomerNewOrder($createdOrder);
+
+                if ($createdOrder->payments()->whereNotNull('payment_proof')->exists()) {
+                    app(StoreNotificationService::class)->notifyAdminNewPayment($createdOrder);
+                }
+            }
+
+            $this->redirectRoute('site.orders.show', [
+                'orderNumber' => $this->orderNumber,
+            ]);
         } catch (\Throwable $e) {
             report($e);
 
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'error',
                 icon: '!',
                 title: app()->getLocale() === 'ar' ? 'لم يتم إنشاء الطلب' : 'Order failed',
                 message: $e->getMessage() ?: (
                     app()->getLocale() === 'ar'
-                        ? 'حدث خطأ أثناء إنشاء الطلب'
-                        : 'Something went wrong while placing the order'
+                    ? 'حدث خطأ أثناء إنشاء الطلب'
+                    : 'Something went wrong while placing the order'
                 )
             );
         }
@@ -802,55 +828,55 @@ class CheckoutPage extends Component
             ->get();
     }
     public function selectedPaymentDetails(): array
-{
-    $settings = StoreSetting::current();
+    {
+        $settings = StoreSetting::current();
 
-    $locale = app()->getLocale();
+        $locale = app()->getLocale();
 
-    $paymentInstructions = $locale === 'ar'
-        ? $settings->payment_instructions_ar
-        : $settings->payment_instructions_en;
+        $paymentInstructions = $locale === 'ar'
+            ? $settings->payment_instructions_ar
+            : $settings->payment_instructions_en;
 
-    return match ($this->payment_method) {
-        'bank_transfer' => [
-            'title' => $locale === 'ar' ? 'بيانات التحويل البنكي' : 'Bank Transfer Details',
-            'details' => $locale === 'ar'
-                ? $settings->bank_account_details_ar
-                : $settings->bank_account_details_en,
-            'instructions' => $paymentInstructions,
-            'requires_proof' => $this->paymentRequiresProof(),
-        ],
+        return match ($this->payment_method) {
+            'bank_transfer' => [
+                'title' => $locale === 'ar' ? 'بيانات التحويل البنكي' : 'Bank Transfer Details',
+                'details' => $locale === 'ar'
+                    ? $settings->bank_account_details_ar
+                    : $settings->bank_account_details_en,
+                'instructions' => $paymentInstructions,
+                'requires_proof' => $this->paymentRequiresProof(),
+            ],
 
-        'wallet_transfer' => [
-            'title' => $locale === 'ar' ? 'بيانات تحويل المحفظة' : 'Wallet Transfer Details',
-            'details' => $locale === 'ar'
-                ? $settings->wallet_details_ar
-                : $settings->wallet_details_en,
-            'instructions' => $paymentInstructions,
-            'requires_proof' => $this->paymentRequiresProof(),
-        ],
+            'wallet_transfer' => [
+                'title' => $locale === 'ar' ? 'بيانات تحويل المحفظة' : 'Wallet Transfer Details',
+                'details' => $locale === 'ar'
+                    ? $settings->wallet_details_ar
+                    : $settings->wallet_details_en,
+                'instructions' => $paymentInstructions,
+                'requires_proof' => $this->paymentRequiresProof(),
+            ],
 
-        'cash_on_delivery' => [
-            'title' => $locale === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery',
-            'details' => (float) $settings->cash_on_delivery_fee > 0
-                ? (
-                    $locale === 'ar'
+            'cash_on_delivery' => [
+                'title' => $locale === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery',
+                'details' => (float) $settings->cash_on_delivery_fee > 0
+                    ? (
+                        $locale === 'ar'
                         ? 'يتم إضافة رسوم دفع عند الاستلام بقيمة ' . number_format((float) $settings->cash_on_delivery_fee, 2) . ' ' . ($settings->currency_symbol ?? 'EGP')
                         : 'A cash on delivery fee of ' . number_format((float) $settings->cash_on_delivery_fee, 2) . ' ' . ($settings->currency_symbol ?? 'EGP') . ' will be added.'
-                )
-                : null,
-            'instructions' => $paymentInstructions,
-            'requires_proof' => false,
-        ],
+                    )
+                    : null,
+                'instructions' => $paymentInstructions,
+                'requires_proof' => false,
+            ],
 
-        default => [
-            'title' => null,
-            'details' => null,
-            'instructions' => $paymentInstructions,
-            'requires_proof' => false,
-        ],
-    };
-}
+            default => [
+                'title' => null,
+                'details' => null,
+                'instructions' => $paymentInstructions,
+                'requires_proof' => false,
+            ],
+        };
+    }
 
     public function render()
     {

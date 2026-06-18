@@ -2352,31 +2352,294 @@
     .checkout-coupon-box p strong {
         @apply text-brand;
     }
+
     .checkout-payment-details {
-    @apply mt-5 rounded-2xl border border-orange-100 bg-orange-50 p-4;
-}
+        @apply mt-5 rounded-2xl border border-orange-100 bg-orange-50 p-4;
+    }
 
-.checkout-payment-details h3 {
-    @apply mb-3 text-base font-black text-dark;
-}
+    .checkout-payment-details h3 {
+        @apply mb-3 text-base font-black text-dark;
+    }
 
-.checkout-payment-details-box {
-    @apply flex min-h-14 items-center justify-center rounded-2xl bg-white px-4 py-3 text-center text-sm font-black leading-6 text-dark;
-    white-space: pre-line;
-}
+    .checkout-payment-details-box {
+        @apply flex min-h-14 items-center justify-center rounded-2xl bg-white px-4 py-3 text-center text-sm font-black leading-6 text-dark;
+        white-space: pre-line;
+    }
 
-.checkout-payment-instructions {
-    @apply mt-4 rounded-2xl bg-white p-4;
-}
+    .checkout-payment-instructions {
+        @apply mt-4 rounded-2xl bg-white p-4;
+    }
 
-.checkout-payment-instructions strong {
-    @apply mb-2 block text-sm font-black text-brand;
-}
+    .checkout-payment-instructions strong {
+        @apply mb-2 block text-sm font-black text-brand;
+    }
 
-.checkout-payment-instructions p {
-    @apply text-sm font-bold leading-8 text-muted;
-    white-space: pre-line;
-}
+    .checkout-payment-instructions p {
+        @apply text-sm font-bold leading-8 text-muted;
+        white-space: pre-line;
+    }
+
+    .order-show-page {
+        @apply bg-soft pb-16 pt-36 md:pt-40;
+    }
+
+    .order-verify-card {
+        @apply mx-auto max-w-xl rounded-[34px] bg-white p-8 text-center shadow-soft;
+    }
+
+    .order-verify-card h1 {
+        @apply text-3xl font-black text-dark;
+    }
+
+    .order-verify-card p {
+        @apply mx-auto mt-3 max-w-md text-sm leading-7 text-muted;
+    }
+
+    .order-verify-form {
+        @apply mt-6 flex flex-col gap-3 sm:flex-row;
+    }
+
+    .order-verify-form input {
+        @apply h-12 min-w-0 flex-1 rounded-2xl border border-gray-100 bg-soft px-4 text-sm font-bold text-dark outline-none focus:border-brand focus:bg-white;
+    }
+
+    .order-verify-form button,
+    .order-verify-card a {
+        @apply inline-flex h-12 items-center justify-center rounded-2xl bg-brand px-6 text-sm font-black text-white transition hover:bg-brand-dark disabled:opacity-60;
+    }
+
+    .order-verify-error {
+        @apply mt-3 block text-xs font-bold text-red-500;
+    }
+
+    .order-show-head {
+        @apply mb-8 flex flex-col gap-5 rounded-[30px] bg-dark p-6 text-white shadow-soft md:flex-row md:items-center md:justify-between md:p-8;
+    }
+
+    .order-show-breadcrumb {
+        @apply mb-4 flex items-center gap-2 text-xs font-black text-white/50;
+    }
+
+    .order-show-breadcrumb a {
+        @apply text-white/60 hover:text-brand;
+    }
+
+    .order-show-head h1 {
+        @apply text-3xl font-black md:text-5xl;
+    }
+
+    .order-show-head p {
+        @apply mt-3 text-sm leading-7 text-white/65;
+    }
+
+    .order-show-head p strong {
+        @apply text-brand;
+    }
+
+    .order-show-badges {
+        @apply flex flex-wrap gap-2;
+    }
+
+    .order-badge {
+        @apply rounded-full px-4 py-2 text-xs font-black;
+    }
+
+    .order-badge.success {
+        @apply bg-emerald-100 text-emerald-700;
+    }
+
+    .order-badge.info {
+        @apply bg-blue-100 text-blue-700;
+    }
+
+    .order-badge.warning {
+        @apply bg-orange-100 text-orange-700;
+    }
+
+    .order-badge.danger {
+        @apply bg-red-100 text-red-700;
+    }
+
+    .order-badge.gray {
+        @apply bg-gray-100 text-gray-700;
+    }
+
+    .order-show-layout {
+        @apply grid gap-6 lg:grid-cols-[1fr_380px] lg:items-start;
+    }
+
+    html[dir="rtl"] .order-show-layout {
+        @apply lg:grid-cols-[380px_1fr];
+    }
+
+    .order-main-card,
+    .order-summary-card,
+    .order-info-card {
+        @apply rounded-[30px] border border-gray-100 bg-white p-6 shadow-soft;
+    }
+
+    .order-main-card h2,
+    .order-summary-card h2,
+    .order-info-card h2 {
+        @apply mb-5 text-2xl font-black text-dark;
+    }
+
+    .order-items-list {
+        @apply space-y-4;
+    }
+
+    .order-item-card {
+        @apply grid grid-cols-[86px_1fr] gap-4 rounded-2xl border border-gray-100 bg-soft p-4 md:grid-cols-[100px_1fr_auto] md:items-center;
+    }
+
+    .order-item-image {
+        @apply flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-white;
+    }
+
+    .order-item-image img {
+        @apply h-full w-full object-cover;
+    }
+
+    .order-item-image span {
+        @apply text-3xl font-black text-brand;
+    }
+
+    .order-item-content h3 {
+        @apply text-base font-black text-dark;
+    }
+
+    .order-item-attrs {
+        @apply mt-2 flex flex-wrap gap-2;
+    }
+
+    .order-item-attrs span {
+        @apply rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-brand;
+    }
+
+    .order-item-content p {
+        @apply mt-2 text-xs font-bold text-muted;
+    }
+
+    .order-item-price {
+        @apply col-span-2 text-start md:col-span-1 md:text-end;
+    }
+
+    html[dir="rtl"] .order-item-price {
+        @apply md:text-left;
+    }
+
+    .order-item-price span {
+        @apply block text-xs font-bold text-muted;
+    }
+
+    .order-item-price strong {
+        @apply block text-lg font-black text-brand;
+    }
+
+    .order-side {
+        @apply space-y-5 lg:sticky lg:top-32;
+    }
+
+    .order-summary-lines,
+    .order-info-lines {
+        @apply space-y-3 border-b border-gray-100 pb-5;
+    }
+
+    .order-summary-lines div,
+    .order-info-lines div,
+    .order-total {
+        @apply flex items-start justify-between gap-4;
+    }
+
+    .order-summary-lines span,
+    .order-info-lines span {
+        @apply text-sm font-bold text-muted;
+    }
+
+    .order-summary-lines strong,
+    .order-info-lines strong {
+        @apply text-sm font-black text-dark;
+    }
+
+    .order-info-lines a {
+        @apply text-sm font-black text-brand hover:underline;
+    }
+
+    .order-total {
+        @apply pt-5;
+    }
+
+    .order-total span {
+        @apply text-base font-black text-dark;
+    }
+
+    .order-total strong {
+        @apply text-2xl font-black text-brand;
+    }
+
+    @media (max-width: 640px) {
+        .order-show-layout {
+            @apply gap-4;
+        }
+
+        .order-main-card,
+        .order-summary-card,
+        .order-info-card {
+            @apply rounded-[24px] p-4;
+        }
+
+        .order-side {
+            position: static;
+        }
+    }
+
+    .track-order-page {
+        @apply bg-soft pb-16 pt-36 md:pt-40;
+    }
+
+    .track-order-card {
+        @apply mx-auto max-w-2xl rounded-[34px] bg-white p-8 text-center shadow-soft md:p-10;
+    }
+
+    .track-order-icon {
+        @apply mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-brand;
+    }
+
+    .track-order-card h1 {
+        @apply text-3xl font-black text-dark md:text-5xl;
+    }
+
+    .track-order-card p {
+        @apply mx-auto mt-4 max-w-xl text-sm font-bold leading-8 text-muted;
+    }
+
+    .track-order-form {
+        @apply mt-8 grid gap-4 text-start;
+    }
+
+    .track-order-field {
+        @apply space-y-2;
+    }
+
+    .track-order-field label {
+        @apply block text-sm font-black text-dark;
+    }
+
+    .track-order-field input {
+        @apply h-12 w-full rounded-2xl border border-gray-100 bg-soft px-4 text-sm font-bold text-dark outline-none transition focus:border-brand focus:bg-white;
+    }
+
+    .track-order-field span {
+        @apply block text-xs font-bold text-red-500;
+    }
+
+    .track-order-form button {
+        @apply mt-2 flex h-12 w-full items-center justify-center rounded-2xl bg-brand text-sm font-black text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .track-order-back {
+        @apply mt-5 inline-flex text-sm font-black text-muted transition hover:text-brand;
+    }
 }
 
 @keyframes announcement-marquee-ltr {

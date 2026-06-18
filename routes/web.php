@@ -6,6 +6,7 @@ use App\Http\Controllers\Site\PageController;
 use App\Http\Controllers\Site\ProductController;
 use App\Http\Controllers\Site\ShopController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Site\OrderController;
 
 
 
@@ -21,6 +22,10 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('site.products.show');
     Route::view('/cart', 'site.pages.cart.index')->name('site.cart');
     Route::view('/checkout', 'site.pages.checkout.index')->name('site.checkout');
+    Route::get('/order/{orderNumber}', [OrderController::class, 'show'])
+    ->name('site.orders.show');
+    Route::view('/track-order', 'site.pages.orders.track')
+    ->name('site.orders.track');
 Route::get('/switch-language/{locale}', function ($locale) {
     if (! in_array($locale, ['en', 'ar'])) {
         abort(400);
