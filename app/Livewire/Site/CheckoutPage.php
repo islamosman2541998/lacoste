@@ -656,44 +656,95 @@ class CheckoutPage extends Component
 
     private function resolveCustomer(): Customer
     {
-        $customerId = $this->customerId();
+        $name = trim($this->customer_name);
+        $email = filled($this->customer_email)
+            ? mb_strtolower(trim($this->customer_email))
+            : null;
 
-        if ($customerId) {
-            $customer = Customer::query()->find($customerId);
+        $phone = filled($this->customer_phone)
+            ? trim($this->customer_phone)
+            : null;
 
-            if ($customer) {
-                $customer->update([
-                    'name' => $this->customer_name,
-                    'email' => $this->customer_email ?: $customer->email,
-                    'phone' => $this->customer_phone,
-                ]);
+        try {
+            $authCustomerId = auth('customer')->id();
 
-                return $customer;
+            if ($authCustomerId) {
+                $customer = Customer::query()->find($authCustomerId);
+
+                if ($customer) {
+                    $data = [
+                        'name' => $name ?: $customer->name,
+                    ];
+
+                    if ($email && $this->canUseCustomerEmail($email, $customer->id)) {
+                        $data['email'] = $email;
+                    }
+
+                    if ($phone && $this->canUseCustomerPhone($phone, $customer->id)) {
+                        $data['phone'] = $phone;
+                    }
+
+                    $customer->update($data);
+
+                    return $customer;
+                }
             }
+        } catch (\Throwable $e) {
+            //
         }
 
-        $customer = Customer::query()
-            ->where('phone', $this->customer_phone)
-            ->first();
+        $customerByEmail = $email
+            ? Customer::query()->where('email', $email)->first()
+            : null;
+
+        $customerByPhone = $phone
+            ? Customer::query()->where('phone', $phone)->first()
+            : null;
+
+
+        $customer = $customerByEmail ?: $customerByPhone;
 
         if ($customer) {
-            $customer->update([
-                'name' => $this->customer_name,
-                'email' => $this->customer_email ?: $customer->email,
-                'is_active' => true,
-            ]);
+            $data = [
+                'name' => $name ?: $customer->name,
+            ];
+
+            if ($email && $this->canUseCustomerEmail($email, $customer->id)) {
+                $data['email'] = $email;
+            }
+
+            if ($phone && $this->canUseCustomerPhone($phone, $customer->id)) {
+                $data['phone'] = $phone;
+            }
+
+            $customer->update($data);
 
             return $customer;
         }
 
         return Customer::query()->create([
-            'name' => $this->customer_name,
-            'email' => $this->customer_email ?: null,
-            'phone' => $this->customer_phone,
-            'password' => Str::random(32),
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'password' => bcrypt(Str::random(32)),
             'is_active' => true,
             'accepts_marketing' => false,
         ]);
+    }
+    private function canUseCustomerEmail(string $email, ?int $ignoreCustomerId = null): bool
+    {
+        return ! Customer::query()
+            ->where('email', $email)
+            ->when($ignoreCustomerId, fn($query) => $query->whereKeyNot($ignoreCustomerId))
+            ->exists();
+    }
+
+    private function canUseCustomerPhone(string $phone, ?int $ignoreCustomerId = null): bool
+    {
+        return ! Customer::query()
+            ->where('phone', $phone)
+            ->when($ignoreCustomerId, fn($query) => $query->whereKeyNot($ignoreCustomerId))
+            ->exists();
     }
 
     private function saveCustomerAddress(Customer $customer): CustomerAddress
