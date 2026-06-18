@@ -3039,6 +3039,16 @@
     .mobile-menu-logout {
         @apply w-full border-0 bg-transparent text-red-300 hover:bg-red-500/10 hover:text-red-200;
     }
+    .customer-auth-error {
+    @apply mt-2 block text-sm font-black text-red-600;
+}
+
+.customer-auth-alert {
+    @apply mt-6 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-black text-red-600;
+}
+.customer-auth-form .customer-auth-error {
+    @apply mt-2 block text-sm font-black text-red-600;
+}
 }
 
 @keyframes announcement-marquee-ltr {

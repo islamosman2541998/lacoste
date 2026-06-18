@@ -1,4 +1,3 @@
-
 <section class="customer-auth-page">
     <div class="site-container">
         <div class="customer-auth-card">
@@ -16,42 +15,93 @@
                     : 'Create your account to track your orders easily.' }}
             </p>
 
-            <div class="customer-auth-form">
+            <form wire:submit.prevent="register" class="customer-auth-form">
                 <div>
                     <label>{{ app()->getLocale() === 'ar' ? 'الاسم' : 'Name' }}</label>
-                    <input type="text" wire:model.defer="name" placeholder="{{ app()->getLocale() === 'ar' ? 'الاسم بالكامل' : 'Full name' }}">
-                    @error('name') <span>{{ $message }}</span> @enderror
+
+                    <input
+                        type="text"
+                        wire:model="name"
+                        placeholder="{{ app()->getLocale() === 'ar' ? 'الاسم بالكامل' : 'Full name' }}"
+                        autocomplete="name"
+                    >
+
+                    @error('name')
+                        <span class="customer-auth-error">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label>{{ app()->getLocale() === 'ar' ? 'البريد الإلكتروني' : 'Email Address' }}</label>
-                    <input type="email" wire:model.defer="email" placeholder="email@example.com">
-                    @error('email') <span>{{ $message }}</span> @enderror
+
+                    <input
+                        type="email"
+                        wire:model="email"
+                        placeholder="email@example.com"
+                        autocomplete="email"
+                    >
+
+                    @error('email')
+                        <span class="customer-auth-error">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label>{{ app()->getLocale() === 'ar' ? 'رقم الهاتف' : 'Phone Number' }}</label>
-                    <input type="text" wire:model.defer="phone" placeholder="{{ app()->getLocale() === 'ar' ? 'رقم الهاتف' : 'Phone number' }}">
-                    @error('phone') <span>{{ $message }}</span> @enderror
+
+                    <input
+                        type="text"
+                        wire:model="phone"
+                        placeholder="{{ app()->getLocale() === 'ar' ? 'رقم الهاتف' : 'Phone number' }}"
+                        autocomplete="tel"
+                    >
+
+                    @error('phone')
+                        <span class="customer-auth-error">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label>{{ app()->getLocale() === 'ar' ? 'كلمة المرور' : 'Password' }}</label>
-                    <input type="password" wire:model.defer="password" placeholder="********">
-                    @error('password') <span>{{ $message }}</span> @enderror
+
+                    <input
+                        type="password"
+                        wire:model="password"
+                        placeholder="********"
+                        autocomplete="new-password"
+                    >
+
+                    @error('password')
+                        <span class="customer-auth-error">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label>{{ app()->getLocale() === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm Password' }}</label>
-                    <input type="password" wire:model.defer="password_confirmation" placeholder="********">
+
+                    <input
+                        type="password"
+                        wire:model="password_confirmation"
+                        placeholder="********"
+                        autocomplete="new-password"
+                    >
+
+                    @error('password_confirmation')
+                        <span class="customer-auth-error">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <label class="customer-auth-check">
-                    <input type="checkbox" wire:model.defer="accepts_marketing">
-                    <span>{{ app()->getLocale() === 'ar' ? 'أوافق على استقبال العروض والتحديثات' : 'I agree to receive offers and updates' }}</span>
+                    <input type="checkbox" wire:model="accepts_marketing">
+
+                    <span>
+                        {{ app()->getLocale() === 'ar'
+                            ? 'أوافق على استقبال العروض والتحديثات'
+                            : 'I agree to receive offers and updates' }}
+                    </span>
                 </label>
 
-                <button type="button" wire:click="register" wire:loading.attr="disabled">
+                <button type="submit" wire:loading.attr="disabled">
                     <span wire:loading.remove>
                         {{ app()->getLocale() === 'ar' ? 'إنشاء الحساب' : 'Create Account' }}
                     </span>
@@ -60,10 +110,15 @@
                         {{ app()->getLocale() === 'ar' ? 'جاري إنشاء الحساب...' : 'Creating account...' }}
                     </span>
                 </button>
-            </div>
+            </form>
 
             <div class="customer-auth-switch">
-                <span>{{ app()->getLocale() === 'ar' ? 'لديك حساب بالفعل؟' : 'Already have an account?' }}</span>
+                <span>
+                    {{ app()->getLocale() === 'ar'
+                        ? 'لديك حساب بالفعل؟'
+                        : 'Already have an account?' }}
+                </span>
+
                 <a href="{{ route('site.customer.login') }}">
                     {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
                 </a>

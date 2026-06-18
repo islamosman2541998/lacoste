@@ -15,25 +15,49 @@
                     : 'Login to track your orders and manage your account.' }}
             </p>
 
-            <div class="customer-auth-form">
+            @error('login')
+                <div class="customer-auth-alert">
+                    {{ $message }}
+                </div>
+            @enderror
+
+            <form wire:submit.prevent="login" class="customer-auth-form">
                 <div>
                     <label>{{ app()->getLocale() === 'ar' ? 'البريد الإلكتروني' : 'Email Address' }}</label>
-                    <input type="email" wire:model.defer="email" placeholder="email@example.com">
-                    @error('email') <span>{{ $message }}</span> @enderror
+
+                    <input
+                        type="email"
+                        wire:model="email"
+                        placeholder="email@example.com"
+                        autocomplete="email"
+                    >
+
+                    @error('email')
+                        <span class="customer-auth-error">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label>{{ app()->getLocale() === 'ar' ? 'كلمة المرور' : 'Password' }}</label>
-                    <input type="password" wire:model.defer="password" placeholder="********">
-                    @error('password') <span>{{ $message }}</span> @enderror
+
+                    <input
+                        type="password"
+                        wire:model="password"
+                        placeholder="********"
+                        autocomplete="current-password"
+                    >
+
+                    @error('password')
+                        <span class="customer-auth-error">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <label class="customer-auth-check">
-                    <input type="checkbox" wire:model.defer="remember">
+                    <input type="checkbox" wire:model="remember">
                     <span>{{ app()->getLocale() === 'ar' ? 'تذكرني' : 'Remember me' }}</span>
                 </label>
 
-                <button type="button" wire:click="login" wire:loading.attr="disabled">
+                <button type="submit" wire:loading.attr="disabled">
                     <span wire:loading.remove>
                         {{ app()->getLocale() === 'ar' ? 'دخول' : 'Login' }}
                     </span>
@@ -42,10 +66,11 @@
                         {{ app()->getLocale() === 'ar' ? 'جاري الدخول...' : 'Logging in...' }}
                     </span>
                 </button>
-            </div>
+            </form>
 
             <div class="customer-auth-switch">
                 <span>{{ app()->getLocale() === 'ar' ? 'ليس لديك حساب؟' : 'Do not have an account?' }}</span>
+
                 <a href="{{ route('site.customer.register') }}">
                     {{ app()->getLocale() === 'ar' ? 'إنشاء حساب جديد' : 'Create account' }}
                 </a>
