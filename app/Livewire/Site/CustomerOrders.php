@@ -25,33 +25,45 @@ class CustomerOrders extends Component
     public function verifyOrders(): void
     {
         $this->validate([
-            'phone' => ['required', 'string', 'max:50'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50', 'required_without:email'],
+            'email' => ['nullable', 'email', 'max:255', 'required_without:phone'],
         ], [
-            'phone.required' => app()->getLocale() === 'ar'
-                ? 'رقم الهاتف مطلوب'
-                : 'Phone number is required',
+            'phone.required_without' => app()->getLocale() === 'ar'
+                ? 'أدخل رقم الهاتف أو البريد الإلكتروني'
+                : 'Enter phone number or email address',
+
+            'email.required_without' => app()->getLocale() === 'ar'
+                ? 'أدخل البريد الإلكتروني أو رقم الهاتف'
+                : 'Enter email address or phone number',
 
             'email.email' => app()->getLocale() === 'ar'
                 ? 'صيغة البريد الإلكتروني غير صحيحة'
                 : 'Invalid email address',
         ]);
 
-        $this->phone = trim($this->phone);
+        $this->phone = filled($this->phone)
+            ? trim($this->phone)
+            : '';
+
         $this->email = filled($this->email)
             ? mb_strtolower(trim($this->email))
             : '';
 
         $exists = Order::query()
-            ->where('customer_phone', $this->phone)
-            ->when(
-                filled($this->email),
-                fn (Builder $query) => $query->where('customer_email', $this->email)
-            )
+            ->where(function (Builder $query) {
+                if (filled($this->phone)) {
+                    $query->orWhere('customer_phone', $this->phone);
+                }
+
+                if (filled($this->email)) {
+                    $query->orWhere('customer_email', $this->email);
+                }
+            })
             ->exists();
 
         if (! $exists) {
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'error',
                 icon: '!',
                 title: app()->getLocale() === 'ar' ? 'لا توجد طلبات' : 'No orders found',
@@ -66,7 +78,8 @@ class CustomerOrders extends Component
         $this->verified = true;
         $this->resetPage();
 
-        $this->dispatch('site-toast',
+        $this->dispatch(
+            'site-toast',
             type: 'success',
             icon: '✓',
             title: app()->getLocale() === 'ar' ? 'تم العثور على الطلبات' : 'Orders found',
@@ -83,7 +96,8 @@ class CustomerOrders extends Component
             ->first();
 
         if (! $order) {
-            $this->dispatch('site-toast',
+            $this->dispatch(
+                'site-toast',
                 type: 'error',
                 icon: '!',
                 title: app()->getLocale() === 'ar' ? 'غير مسموح' : 'Not allowed',
@@ -151,29 +165,32 @@ class CustomerOrders extends Component
         };
     }
 
-    private function ordersQuery(): Builder
-    {
-        $query = Order::query()
-            ->withCount('items')
-            ->latest();
+   private function ordersQuery(): Builder
+{
+    $query = Order::query()
+        ->withCount('items')
+        ->latest();
 
-        $customerId = $this->authenticatedCustomerId();
+    $customerId = $this->authenticatedCustomerId();
 
-        if ($customerId) {
-            return $query->where('customer_id', $customerId);
-        }
-
-        if (! $this->verified) {
-            return $query->whereRaw('1 = 0');
-        }
-
-        return $query
-            ->where('customer_phone', $this->phone)
-            ->when(
-                filled($this->email),
-                fn (Builder $query) => $query->where('customer_email', $this->email)
-            );
+    if ($customerId) {
+        return $query->where('customer_id', $customerId);
     }
+
+    if (! $this->verified) {
+        return $query->whereRaw('1 = 0');
+    }
+
+    return $query->where(function (Builder $query) {
+        if (filled($this->phone)) {
+            $query->orWhere('customer_phone', $this->phone);
+        }
+
+        if (filled($this->email)) {
+            $query->orWhere('customer_email', $this->email);
+        }
+    });
+}
 
     private function hasAuthenticatedCustomer(): bool
     {

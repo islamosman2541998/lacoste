@@ -48,8 +48,8 @@
 
                 <p>
                     {{ app()->getLocale() === 'ar'
-                        ? 'أدخل رقم الهاتف والبريد الإلكتروني المستخدمين أثناء الطلب لعرض جميع طلباتك.'
-                        : 'Enter the phone number and email used during checkout to view all your orders.' }}
+                        ? 'أدخل رقم الهاتف اوالبريد الإلكتروني المستخدمين أثناء الطلب لعرض جميع طلباتك.'
+                        : 'Enter the phone number or email used during checkout to view all your orders.' }}
                 </p>
 
                 <div class="customer-orders-verify-form">

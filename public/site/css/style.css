@@ -7089,11 +7089,11 @@ html[dir="rtl"] .product-show-description-box div {
 .customer-orders-verify-form span {
   margin-top: 0.5rem;
   display: block;
-  font-size: 1rem;
+  font-size: 0.75rem;
   line-height: 1rem;
   font-weight: 700;
   --tw-text-opacity: 1;
-  color: #ffff !important;
+  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
 }
 
 .customer-orders-verify-form button,
