@@ -14,20 +14,40 @@ Route::get('/', [HomeController::class, 'index'])->name('site.home');
 Route::get('/pages/{slug}', [PageController::class, 'show'])
     ->name('site.pages.show');
 Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/invoices/{invoice}/print', InvoicePrintController::class)
-            ->name('invoices.print');
-    });
+    Route::get('/invoices/{invoice}/print', InvoicePrintController::class)
+        ->name('invoices.print');
+});
 
-    Route::view('/shop', 'site.pages.shop.index')->name('site.shop');
-    Route::get('/product/{slug}', [ProductController::class, 'show'])->name('site.products.show');
-    Route::view('/cart', 'site.pages.cart.index')->name('site.cart');
-    Route::view('/checkout', 'site.pages.checkout.index')->name('site.checkout');
-    Route::get('/order/{orderNumber}', [OrderController::class, 'show'])
+Route::view('/shop', 'site.pages.shop.index')->name('site.shop');
+Route::get('/product/{slug}', [ProductController::class, 'show'])->name('site.products.show');
+Route::view('/cart', 'site.pages.cart.index')->name('site.cart');
+Route::view('/checkout', 'site.pages.checkout.index')->name('site.checkout');
+Route::get('/order/{orderNumber}', [OrderController::class, 'show'])
     ->name('site.orders.show');
-    Route::view('/track-order', 'site.pages.orders.track')
+Route::view('/track-order', 'site.pages.orders.track')
     ->name('site.orders.track');
-    Route::view('/my-orders', 'site.pages.customer.orders')
+Route::view('/my-orders', 'site.pages.customer.orders')
     ->name('site.customer.orders');
+Route::middleware('guest:customer')->group(function () {
+    Route::view('/customer/login', 'site.pages.customer.login')
+        ->name('site.customer.login');
+
+    Route::view('/customer/register', 'site.pages.customer.register')
+        ->name('site.customer.register');
+});
+
+Route::middleware('auth:customer')->group(function () {
+    Route::view('/account', 'site.pages.customer.account')
+        ->name('site.customer.account');
+});
+
+Route::post('/customer/logout', function () {
+    auth('customer')->logout();
+
+    request()->session()->regenerateToken();
+
+    return redirect()->route('site.home');
+})->name('site.customer.logout');
 Route::get('/switch-language/{locale}', function ($locale) {
     if (! in_array($locale, ['en', 'ar'])) {
         abort(400);

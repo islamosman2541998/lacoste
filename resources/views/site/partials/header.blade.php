@@ -2,6 +2,8 @@
     $wishlistUrl = '#';
     $loginUrl = '#';
     $accountUrl = '#';
+    $ordersUrl = '#';
+    $logoutUrl = '#';
 
     if (\Illuminate\Support\Facades\Route::has('site.wishlist.index')) {
         $wishlistUrl = route('site.wishlist.index');
@@ -11,7 +13,9 @@
         $wishlistUrl = route('wishlist.index');
     }
 
-    if (\Illuminate\Support\Facades\Route::has('site.login')) {
+    if (\Illuminate\Support\Facades\Route::has('site.customer.login')) {
+        $loginUrl = route('site.customer.login');
+    } elseif (\Illuminate\Support\Facades\Route::has('site.login')) {
         $loginUrl = route('site.login');
     } elseif (\Illuminate\Support\Facades\Route::has('customer.login')) {
         $loginUrl = route('customer.login');
@@ -19,7 +23,9 @@
         $loginUrl = route('login');
     }
 
-    if (\Illuminate\Support\Facades\Route::has('site.account')) {
+    if (\Illuminate\Support\Facades\Route::has('site.customer.account')) {
+        $accountUrl = route('site.customer.account');
+    } elseif (\Illuminate\Support\Facades\Route::has('site.account')) {
         $accountUrl = route('site.account');
     } elseif (\Illuminate\Support\Facades\Route::has('customer.account')) {
         $accountUrl = route('customer.account');
@@ -27,26 +33,41 @@
         $accountUrl = route('profile.edit');
     }
 
+    if (\Illuminate\Support\Facades\Route::has('site.customer.orders')) {
+        $ordersUrl = route('site.customer.orders');
+    }
+
+    if (\Illuminate\Support\Facades\Route::has('site.customer.logout')) {
+        $logoutUrl = route('site.customer.logout');
+    }
+
     $customerIsLoggedIn = false;
+    $customer = null;
 
     try {
         $customerIsLoggedIn = auth('customer')->check();
+        $customer = auth('customer')->user();
     } catch (\Throwable $e) {
         $customerIsLoggedIn = false;
+        $customer = null;
     }
+
+    $customerName = $customer?->name ?: (app()->getLocale() === 'ar' ? 'حسابي' : 'Account');
 
     $authUrl = $customerIsLoggedIn ? $accountUrl : $loginUrl;
 
-    $authLabel = $customerIsLoggedIn
-        ? (app()->getLocale() === 'ar'
-            ? 'حسابي'
-            : 'Account')
-        : (app()->getLocale() === 'ar'
-            ? 'تسجيل الدخول'
-            : 'Login');
+    $authLabel = $customerIsLoggedIn ? $customerName : (app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login');
+
+    $customerInitial = mb_substr($customerName, 0, 1);
+
+$isHomePage = app('view')->hasSection('transparent_header');
 @endphp
 
-<header data-site-header class="site-header site-header-transparent fixed left-0 top-0 z-50 w-full transition">
+<header
+    data-site-header
+    data-header-transparent="{{ $isHomePage ? 'true' : 'false' }}"
+    class="site-header {{ $isHomePage ? 'site-header-transparent' : 'site-header-solid is-scrolled' }} fixed left-0 top-0 z-50 w-full transition"
+>
     @if ($storeSettings->announcement_bar_enabled && $storeSettings->announcement_bar_text)
         <div class="overflow-hidden border-b border-white/10"
             style="
@@ -119,14 +140,52 @@
 
                 @livewire('site.cart-counter')
 
-                <a href="{{ $authUrl }}" class="site-header-icon hidden lg:inline-flex"
-                    aria-label="{{ $authLabel }}" title="{{ $authLabel }}">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 20.25a7.5 7.5 0 0 1 15 0" />
-                    </svg>
-                </a>
+                @if (!$customerIsLoggedIn)
+                    <a href="{{ $loginUrl }}" class="site-header-icon hidden lg:inline-flex"
+                        aria-label="{{ $authLabel }}" title="{{ $authLabel }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 20.25a7.5 7.5 0 0 1 15 0" />
+                        </svg>
+                    </a>
+                @else
+                    <details class="site-account-dropdown hidden lg:block">
+                        <summary class="site-account-trigger">
+                            <span class="site-account-avatar">
+                                {{ $customerInitial }}
+                            </span>
+
+                            <span class="site-account-name">
+                                {{ \Illuminate\Support\Str::limit($customerName, 16) }}
+                            </span>
+
+                            <svg class="site-account-chevron" fill="none" stroke="currentColor" stroke-width="2.3"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                            </svg>
+                        </summary>
+
+                        <div class="site-account-menu">
+                            <a href="{{ $accountUrl }}">
+                                {{ app()->getLocale() === 'ar' ? 'حسابي' : 'My Account' }}
+                            </a>
+
+                            <a href="{{ $ordersUrl }}">
+                                {{ app()->getLocale() === 'ar' ? 'طلباتي' : 'My Orders' }}
+                            </a>
+
+                            <form method="POST" action="{{ $logoutUrl }}">
+                                @csrf
+
+                                <button type="submit">
+                                    {{ app()->getLocale() === 'ar' ? 'تسجيل خروج' : 'Logout' }}
+                                </button>
+                            </form>
+                        </div>
+                    </details>
+                @endif
 
                 <a href="{{ route('switch.language', ['locale' => app()->getLocale() === 'ar' ? 'en' : 'ar']) }}"
                     class="site-header-lang hidden sm:inline-flex">
@@ -166,19 +225,57 @@
                         {{ app()->getLocale() === 'ar' ? 'قائمة الرغبات' : 'Wishlist' }}
                     </a>
 
-                    <a href="{{ $authUrl }}" class="mobile-menu-action">
-                        <span>
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4.5 20.25a7.5 7.5 0 0 1 15 0" />
-                            </svg>
-                        </span>
+                    @if (!$customerIsLoggedIn)
+                        <a href="{{ $loginUrl }}" class="mobile-menu-action">
+                            <span>
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M4.5 20.25a7.5 7.5 0 0 1 15 0" />
+                                </svg>
+                            </span>
 
-                        {{ $authLabel }}
-                    </a>
+                            {{ app()->getLocale() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
+                        </a>
+                    @else
+                        <a href="{{ $accountUrl }}" class="mobile-menu-action">
+                            <span class="mobile-menu-avatar">
+                                {{ $customerInitial }}
+                            </span>
+
+                            {{ $customerName }}
+                        </a>
+
+                        <a href="{{ $ordersUrl }}" class="mobile-menu-action">
+                            <span>
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12h6m-6 4h6M7 3h10a2 2 0 0 1 2 2v14l-4-2-3 2-3-2-4 2V5a2 2 0 0 1 2-2Z" />
+                                </svg>
+                            </span>
+
+                            {{ app()->getLocale() === 'ar' ? 'طلباتي' : 'My Orders' }}
+                        </a>
+
+                        <form method="POST" action="{{ $logoutUrl }}">
+                            @csrf
+
+                            <button type="submit" class="mobile-menu-action mobile-menu-logout">
+                                <span>
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M18 12H9m9 0-3-3m3 3-3 3" />
+                                    </svg>
+                                </span>
+
+                                {{ app()->getLocale() === 'ar' ? 'تسجيل خروج' : 'Logout' }}
+                            </button>
+                        </form>
+                    @endif
 
                     <a href="{{ route('switch.language', ['locale' => app()->getLocale() === 'ar' ? 'en' : 'ar']) }}"
                         class="mobile-menu-action sm:hidden">

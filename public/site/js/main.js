@@ -4,17 +4,32 @@ document.addEventListener("DOMContentLoaded", function () {
     | Header shadow on scroll
     |--------------------------------------------------------------------------
     */
-    const header = document.querySelector("[data-site-header]");
+  const siteHeader = document.querySelector("[data-site-header]");
 
-    if (header) {
-        function updateHeaderState() {
-            header.classList.toggle("is-scrolled", window.scrollY > 30);
+if (siteHeader) {
+    const canBeTransparent =
+        siteHeader.dataset.headerTransparent === "true";
+
+    const updateHeaderOnScroll = () => {
+        if (!canBeTransparent) {
+            siteHeader.classList.remove("site-header-transparent");
+            siteHeader.classList.add("site-header-solid", "is-scrolled");
+            return;
         }
 
-        updateHeaderState();
+        if (window.scrollY > 20) {
+            siteHeader.classList.add("is-scrolled");
+        } else {
+            siteHeader.classList.remove("is-scrolled");
+        }
+    };
 
-        window.addEventListener("scroll", updateHeaderState);
-    }
+    updateHeaderOnScroll();
+
+    window.addEventListener("scroll", updateHeaderOnScroll, {
+        passive: true,
+    });
+}
 
     /*
     |--------------------------------------------------------------------------
@@ -198,9 +213,9 @@ document.addEventListener("DOMContentLoaded", function () {
 | Featured Categories Slider
 |--------------------------------------------------------------------------
 */
-const categoriesSlider = document.querySelector('[data-categories-slider]');
-const categoriesNext = document.querySelector('[data-categories-next]');
-const categoriesPrev = document.querySelector('[data-categories-prev]');
+const categoriesSlider = document.querySelector("[data-categories-slider]");
+const categoriesNext = document.querySelector("[data-categories-next]");
+const categoriesPrev = document.querySelector("[data-categories-prev]");
 
 if (categoriesSlider) {
     let categoryTimer = null;
@@ -209,7 +224,7 @@ if (categoriesSlider) {
     let scrollLeft = 0;
 
     function getCategoryScrollAmount() {
-        const firstCard = categoriesSlider.querySelector('.home-category-card');
+        const firstCard = categoriesSlider.querySelector(".home-category-card");
 
         if (!firstCard) {
             return 245;
@@ -222,34 +237,38 @@ if (categoriesSlider) {
     }
 
     function categoriesScrollNext() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getCategoryScrollAmount();
 
         categoriesSlider.scrollBy({
             left: isRtl ? -amount : amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
 
-        const maxScroll = categoriesSlider.scrollWidth - categoriesSlider.clientWidth;
+        const maxScroll =
+            categoriesSlider.scrollWidth - categoriesSlider.clientWidth;
 
         setTimeout(function () {
             if (!isRtl && categoriesSlider.scrollLeft >= maxScroll - 10) {
-                categoriesSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                categoriesSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
 
-            if (isRtl && Math.abs(categoriesSlider.scrollLeft) >= maxScroll - 10) {
-                categoriesSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            if (
+                isRtl &&
+                Math.abs(categoriesSlider.scrollLeft) >= maxScroll - 10
+            ) {
+                categoriesSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
         }, 450);
     }
 
     function categoriesScrollPrev() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getCategoryScrollAmount();
 
         categoriesSlider.scrollBy({
             left: isRtl ? amount : -amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
     }
 
@@ -271,44 +290,44 @@ if (categoriesSlider) {
     }
 
     if (categoriesNext) {
-        categoriesNext.addEventListener('click', function () {
+        categoriesNext.addEventListener("click", function () {
             categoriesScrollNext();
             startCategoriesAutoPlay();
         });
     }
 
     if (categoriesPrev) {
-        categoriesPrev.addEventListener('click', function () {
+        categoriesPrev.addEventListener("click", function () {
             categoriesScrollPrev();
             startCategoriesAutoPlay();
         });
     }
 
-    categoriesSlider.addEventListener('mousedown', function (event) {
+    categoriesSlider.addEventListener("mousedown", function (event) {
         isDown = true;
-        categoriesSlider.classList.add('is-dragging');
+        categoriesSlider.classList.add("is-dragging");
         startX = event.pageX - categoriesSlider.offsetLeft;
         scrollLeft = categoriesSlider.scrollLeft;
         stopCategoriesAutoPlay();
     });
 
-    categoriesSlider.addEventListener('mouseleave', function () {
+    categoriesSlider.addEventListener("mouseleave", function () {
         if (!isDown) {
             return;
         }
 
         isDown = false;
-        categoriesSlider.classList.remove('is-dragging');
+        categoriesSlider.classList.remove("is-dragging");
         startCategoriesAutoPlay();
     });
 
-    categoriesSlider.addEventListener('mouseup', function () {
+    categoriesSlider.addEventListener("mouseup", function () {
         isDown = false;
-        categoriesSlider.classList.remove('is-dragging');
+        categoriesSlider.classList.remove("is-dragging");
         startCategoriesAutoPlay();
     });
 
-    categoriesSlider.addEventListener('mousemove', function (event) {
+    categoriesSlider.addEventListener("mousemove", function (event) {
         if (!isDown) {
             return;
         }
@@ -321,15 +340,19 @@ if (categoriesSlider) {
         categoriesSlider.scrollLeft = scrollLeft - walk;
     });
 
-    categoriesSlider.addEventListener('touchstart', function () {
-        stopCategoriesAutoPlay();
-    }, { passive: true });
+    categoriesSlider.addEventListener(
+        "touchstart",
+        function () {
+            stopCategoriesAutoPlay();
+        },
+        { passive: true },
+    );
 
-    categoriesSlider.addEventListener('touchend', function () {
+    categoriesSlider.addEventListener("touchend", function () {
         startCategoriesAutoPlay();
     });
 
-    window.addEventListener('resize', function () {
+    window.addEventListener("resize", function () {
         startCategoriesAutoPlay();
     });
 
@@ -340,9 +363,9 @@ if (categoriesSlider) {
 | Featured Products Slider
 |--------------------------------------------------------------------------
 */
-const productsSlider = document.querySelector('[data-products-slider]');
-const productsNext = document.querySelector('[data-products-next]');
-const productsPrev = document.querySelector('[data-products-prev]');
+const productsSlider = document.querySelector("[data-products-slider]");
+const productsNext = document.querySelector("[data-products-next]");
+const productsPrev = document.querySelector("[data-products-prev]");
 
 if (productsSlider) {
     let productTimer = null;
@@ -351,7 +374,7 @@ if (productsSlider) {
     let productScrollLeft = 0;
 
     function getProductScrollAmount() {
-        const firstCard = productsSlider.querySelector('.product-card');
+        const firstCard = productsSlider.querySelector(".product-card");
 
         if (!firstCard) {
             return 260;
@@ -364,34 +387,38 @@ if (productsSlider) {
     }
 
     function productsScrollNext() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getProductScrollAmount();
 
         productsSlider.scrollBy({
             left: isRtl ? -amount : amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
 
-        const maxScroll = productsSlider.scrollWidth - productsSlider.clientWidth;
+        const maxScroll =
+            productsSlider.scrollWidth - productsSlider.clientWidth;
 
         setTimeout(function () {
             if (!isRtl && productsSlider.scrollLeft >= maxScroll - 10) {
-                productsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                productsSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
 
-            if (isRtl && Math.abs(productsSlider.scrollLeft) >= maxScroll - 10) {
-                productsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            if (
+                isRtl &&
+                Math.abs(productsSlider.scrollLeft) >= maxScroll - 10
+            ) {
+                productsSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
         }, 450);
     }
 
     function productsScrollPrev() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getProductScrollAmount();
 
         productsSlider.scrollBy({
             left: isRtl ? amount : -amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
     }
 
@@ -413,44 +440,44 @@ if (productsSlider) {
     }
 
     if (productsNext) {
-        productsNext.addEventListener('click', function () {
+        productsNext.addEventListener("click", function () {
             productsScrollNext();
             startProductsAutoPlay();
         });
     }
 
     if (productsPrev) {
-        productsPrev.addEventListener('click', function () {
+        productsPrev.addEventListener("click", function () {
             productsScrollPrev();
             startProductsAutoPlay();
         });
     }
 
-    productsSlider.addEventListener('mousedown', function (event) {
+    productsSlider.addEventListener("mousedown", function (event) {
         isProductDown = true;
-        productsSlider.classList.add('is-dragging');
+        productsSlider.classList.add("is-dragging");
         productStartX = event.pageX - productsSlider.offsetLeft;
         productScrollLeft = productsSlider.scrollLeft;
         stopProductsAutoPlay();
     });
 
-    productsSlider.addEventListener('mouseleave', function () {
+    productsSlider.addEventListener("mouseleave", function () {
         if (!isProductDown) {
             return;
         }
 
         isProductDown = false;
-        productsSlider.classList.remove('is-dragging');
+        productsSlider.classList.remove("is-dragging");
         startProductsAutoPlay();
     });
 
-    productsSlider.addEventListener('mouseup', function () {
+    productsSlider.addEventListener("mouseup", function () {
         isProductDown = false;
-        productsSlider.classList.remove('is-dragging');
+        productsSlider.classList.remove("is-dragging");
         startProductsAutoPlay();
     });
 
-    productsSlider.addEventListener('mousemove', function (event) {
+    productsSlider.addEventListener("mousemove", function (event) {
         if (!isProductDown) {
             return;
         }
@@ -463,15 +490,19 @@ if (productsSlider) {
         productsSlider.scrollLeft = productScrollLeft - walk;
     });
 
-    productsSlider.addEventListener('touchstart', function () {
-        stopProductsAutoPlay();
-    }, { passive: true });
+    productsSlider.addEventListener(
+        "touchstart",
+        function () {
+            stopProductsAutoPlay();
+        },
+        { passive: true },
+    );
 
-    productsSlider.addEventListener('touchend', function () {
+    productsSlider.addEventListener("touchend", function () {
         startProductsAutoPlay();
     });
 
-    window.addEventListener('resize', function () {
+    window.addEventListener("resize", function () {
         startProductsAutoPlay();
     });
 
@@ -483,9 +514,9 @@ if (productsSlider) {
 | New Products Slider
 |--------------------------------------------------------------------------
 */
-const newProductsSlider = document.querySelector('[data-new-products-slider]');
-const newProductsNext = document.querySelector('[data-new-products-next]');
-const newProductsPrev = document.querySelector('[data-new-products-prev]');
+const newProductsSlider = document.querySelector("[data-new-products-slider]");
+const newProductsNext = document.querySelector("[data-new-products-next]");
+const newProductsPrev = document.querySelector("[data-new-products-prev]");
 
 if (newProductsSlider) {
     let newProductTimer = null;
@@ -494,7 +525,7 @@ if (newProductsSlider) {
     let newProductScrollLeft = 0;
 
     function getNewProductScrollAmount() {
-        const firstCard = newProductsSlider.querySelector('.product-card');
+        const firstCard = newProductsSlider.querySelector(".product-card");
 
         if (!firstCard) {
             return 260;
@@ -507,34 +538,38 @@ if (newProductsSlider) {
     }
 
     function newProductsScrollNext() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getNewProductScrollAmount();
 
         newProductsSlider.scrollBy({
             left: isRtl ? -amount : amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
 
-        const maxScroll = newProductsSlider.scrollWidth - newProductsSlider.clientWidth;
+        const maxScroll =
+            newProductsSlider.scrollWidth - newProductsSlider.clientWidth;
 
         setTimeout(function () {
             if (!isRtl && newProductsSlider.scrollLeft >= maxScroll - 10) {
-                newProductsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                newProductsSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
 
-            if (isRtl && Math.abs(newProductsSlider.scrollLeft) >= maxScroll - 10) {
-                newProductsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            if (
+                isRtl &&
+                Math.abs(newProductsSlider.scrollLeft) >= maxScroll - 10
+            ) {
+                newProductsSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
         }, 450);
     }
 
     function newProductsScrollPrev() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getNewProductScrollAmount();
 
         newProductsSlider.scrollBy({
             left: isRtl ? amount : -amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
     }
 
@@ -556,44 +591,44 @@ if (newProductsSlider) {
     }
 
     if (newProductsNext) {
-        newProductsNext.addEventListener('click', function () {
+        newProductsNext.addEventListener("click", function () {
             newProductsScrollNext();
             startNewProductsAutoPlay();
         });
     }
 
     if (newProductsPrev) {
-        newProductsPrev.addEventListener('click', function () {
+        newProductsPrev.addEventListener("click", function () {
             newProductsScrollPrev();
             startNewProductsAutoPlay();
         });
     }
 
-    newProductsSlider.addEventListener('mousedown', function (event) {
+    newProductsSlider.addEventListener("mousedown", function (event) {
         isNewProductDown = true;
-        newProductsSlider.classList.add('is-dragging');
+        newProductsSlider.classList.add("is-dragging");
         newProductStartX = event.pageX - newProductsSlider.offsetLeft;
         newProductScrollLeft = newProductsSlider.scrollLeft;
         stopNewProductsAutoPlay();
     });
 
-    newProductsSlider.addEventListener('mouseleave', function () {
+    newProductsSlider.addEventListener("mouseleave", function () {
         if (!isNewProductDown) {
             return;
         }
 
         isNewProductDown = false;
-        newProductsSlider.classList.remove('is-dragging');
+        newProductsSlider.classList.remove("is-dragging");
         startNewProductsAutoPlay();
     });
 
-    newProductsSlider.addEventListener('mouseup', function () {
+    newProductsSlider.addEventListener("mouseup", function () {
         isNewProductDown = false;
-        newProductsSlider.classList.remove('is-dragging');
+        newProductsSlider.classList.remove("is-dragging");
         startNewProductsAutoPlay();
     });
 
-    newProductsSlider.addEventListener('mousemove', function (event) {
+    newProductsSlider.addEventListener("mousemove", function (event) {
         if (!isNewProductDown) {
             return;
         }
@@ -606,15 +641,19 @@ if (newProductsSlider) {
         newProductsSlider.scrollLeft = newProductScrollLeft - walk;
     });
 
-    newProductsSlider.addEventListener('touchstart', function () {
-        stopNewProductsAutoPlay();
-    }, { passive: true });
+    newProductsSlider.addEventListener(
+        "touchstart",
+        function () {
+            stopNewProductsAutoPlay();
+        },
+        { passive: true },
+    );
 
-    newProductsSlider.addEventListener('touchend', function () {
+    newProductsSlider.addEventListener("touchend", function () {
         startNewProductsAutoPlay();
     });
 
-    window.addEventListener('resize', function () {
+    window.addEventListener("resize", function () {
         startNewProductsAutoPlay();
     });
 
@@ -625,9 +664,9 @@ if (newProductsSlider) {
 | Flash Sales Slider
 |--------------------------------------------------------------------------
 */
-const flashSalesSlider = document.querySelector('[data-flash-sales-slider]');
-const flashSalesNext = document.querySelector('[data-flash-sales-next]');
-const flashSalesPrev = document.querySelector('[data-flash-sales-prev]');
+const flashSalesSlider = document.querySelector("[data-flash-sales-slider]");
+const flashSalesNext = document.querySelector("[data-flash-sales-next]");
+const flashSalesPrev = document.querySelector("[data-flash-sales-prev]");
 
 if (flashSalesSlider) {
     let flashSaleTimer = null;
@@ -636,7 +675,7 @@ if (flashSalesSlider) {
     let flashSaleScrollLeft = 0;
 
     function getFlashSaleScrollAmount() {
-        const firstCard = flashSalesSlider.querySelector('.product-card');
+        const firstCard = flashSalesSlider.querySelector(".product-card");
 
         if (!firstCard) {
             return 260;
@@ -649,34 +688,38 @@ if (flashSalesSlider) {
     }
 
     function flashSalesScrollNext() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getFlashSaleScrollAmount();
 
         flashSalesSlider.scrollBy({
             left: isRtl ? -amount : amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
 
-        const maxScroll = flashSalesSlider.scrollWidth - flashSalesSlider.clientWidth;
+        const maxScroll =
+            flashSalesSlider.scrollWidth - flashSalesSlider.clientWidth;
 
         setTimeout(function () {
             if (!isRtl && flashSalesSlider.scrollLeft >= maxScroll - 10) {
-                flashSalesSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                flashSalesSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
 
-            if (isRtl && Math.abs(flashSalesSlider.scrollLeft) >= maxScroll - 10) {
-                flashSalesSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            if (
+                isRtl &&
+                Math.abs(flashSalesSlider.scrollLeft) >= maxScroll - 10
+            ) {
+                flashSalesSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
         }, 450);
     }
 
     function flashSalesScrollPrev() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getFlashSaleScrollAmount();
 
         flashSalesSlider.scrollBy({
             left: isRtl ? amount : -amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
     }
 
@@ -698,44 +741,44 @@ if (flashSalesSlider) {
     }
 
     if (flashSalesNext) {
-        flashSalesNext.addEventListener('click', function () {
+        flashSalesNext.addEventListener("click", function () {
             flashSalesScrollNext();
             startFlashSalesAutoPlay();
         });
     }
 
     if (flashSalesPrev) {
-        flashSalesPrev.addEventListener('click', function () {
+        flashSalesPrev.addEventListener("click", function () {
             flashSalesScrollPrev();
             startFlashSalesAutoPlay();
         });
     }
 
-    flashSalesSlider.addEventListener('mousedown', function (event) {
+    flashSalesSlider.addEventListener("mousedown", function (event) {
         isFlashSaleDown = true;
-        flashSalesSlider.classList.add('is-dragging');
+        flashSalesSlider.classList.add("is-dragging");
         flashSaleStartX = event.pageX - flashSalesSlider.offsetLeft;
         flashSaleScrollLeft = flashSalesSlider.scrollLeft;
         stopFlashSalesAutoPlay();
     });
 
-    flashSalesSlider.addEventListener('mouseleave', function () {
+    flashSalesSlider.addEventListener("mouseleave", function () {
         if (!isFlashSaleDown) {
             return;
         }
 
         isFlashSaleDown = false;
-        flashSalesSlider.classList.remove('is-dragging');
+        flashSalesSlider.classList.remove("is-dragging");
         startFlashSalesAutoPlay();
     });
 
-    flashSalesSlider.addEventListener('mouseup', function () {
+    flashSalesSlider.addEventListener("mouseup", function () {
         isFlashSaleDown = false;
-        flashSalesSlider.classList.remove('is-dragging');
+        flashSalesSlider.classList.remove("is-dragging");
         startFlashSalesAutoPlay();
     });
 
-    flashSalesSlider.addEventListener('mousemove', function (event) {
+    flashSalesSlider.addEventListener("mousemove", function (event) {
         if (!isFlashSaleDown) {
             return;
         }
@@ -748,15 +791,19 @@ if (flashSalesSlider) {
         flashSalesSlider.scrollLeft = flashSaleScrollLeft - walk;
     });
 
-    flashSalesSlider.addEventListener('touchstart', function () {
-        stopFlashSalesAutoPlay();
-    }, { passive: true });
+    flashSalesSlider.addEventListener(
+        "touchstart",
+        function () {
+            stopFlashSalesAutoPlay();
+        },
+        { passive: true },
+    );
 
-    flashSalesSlider.addEventListener('touchend', function () {
+    flashSalesSlider.addEventListener("touchend", function () {
         startFlashSalesAutoPlay();
     });
 
-    window.addEventListener('resize', function () {
+    window.addEventListener("resize", function () {
         startFlashSalesAutoPlay();
     });
 
@@ -767,9 +814,9 @@ if (flashSalesSlider) {
 | Brands Slider
 |--------------------------------------------------------------------------
 */
-const brandsSlider = document.querySelector('[data-brands-slider]');
-const brandsNext = document.querySelector('[data-brands-next]');
-const brandsPrev = document.querySelector('[data-brands-prev]');
+const brandsSlider = document.querySelector("[data-brands-slider]");
+const brandsNext = document.querySelector("[data-brands-next]");
+const brandsPrev = document.querySelector("[data-brands-prev]");
 
 if (brandsSlider) {
     let brandTimer = null;
@@ -778,7 +825,7 @@ if (brandsSlider) {
     let brandScrollLeft = 0;
 
     function getBrandScrollAmount() {
-        const firstCard = brandsSlider.querySelector('.home-brand-card');
+        const firstCard = brandsSlider.querySelector(".home-brand-card");
 
         if (!firstCard) {
             return 230;
@@ -791,34 +838,34 @@ if (brandsSlider) {
     }
 
     function brandsScrollNext() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getBrandScrollAmount();
 
         brandsSlider.scrollBy({
             left: isRtl ? -amount : amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
 
         const maxScroll = brandsSlider.scrollWidth - brandsSlider.clientWidth;
 
         setTimeout(function () {
             if (!isRtl && brandsSlider.scrollLeft >= maxScroll - 10) {
-                brandsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                brandsSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
 
             if (isRtl && Math.abs(brandsSlider.scrollLeft) >= maxScroll - 10) {
-                brandsSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                brandsSlider.scrollTo({ left: 0, behavior: "smooth" });
             }
         }, 450);
     }
 
     function brandsScrollPrev() {
-        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        const isRtl = document.documentElement.getAttribute("dir") === "rtl";
         const amount = getBrandScrollAmount();
 
         brandsSlider.scrollBy({
             left: isRtl ? amount : -amount,
-            behavior: 'smooth',
+            behavior: "smooth",
         });
     }
 
@@ -840,44 +887,44 @@ if (brandsSlider) {
     }
 
     if (brandsNext) {
-        brandsNext.addEventListener('click', function () {
+        brandsNext.addEventListener("click", function () {
             brandsScrollNext();
             startBrandsAutoPlay();
         });
     }
 
     if (brandsPrev) {
-        brandsPrev.addEventListener('click', function () {
+        brandsPrev.addEventListener("click", function () {
             brandsScrollPrev();
             startBrandsAutoPlay();
         });
     }
 
-    brandsSlider.addEventListener('mousedown', function (event) {
+    brandsSlider.addEventListener("mousedown", function (event) {
         isBrandDown = true;
-        brandsSlider.classList.add('is-dragging');
+        brandsSlider.classList.add("is-dragging");
         brandStartX = event.pageX - brandsSlider.offsetLeft;
         brandScrollLeft = brandsSlider.scrollLeft;
         stopBrandsAutoPlay();
     });
 
-    brandsSlider.addEventListener('mouseleave', function () {
+    brandsSlider.addEventListener("mouseleave", function () {
         if (!isBrandDown) {
             return;
         }
 
         isBrandDown = false;
-        brandsSlider.classList.remove('is-dragging');
+        brandsSlider.classList.remove("is-dragging");
         startBrandsAutoPlay();
     });
 
-    brandsSlider.addEventListener('mouseup', function () {
+    brandsSlider.addEventListener("mouseup", function () {
         isBrandDown = false;
-        brandsSlider.classList.remove('is-dragging');
+        brandsSlider.classList.remove("is-dragging");
         startBrandsAutoPlay();
     });
 
-    brandsSlider.addEventListener('mousemove', function (event) {
+    brandsSlider.addEventListener("mousemove", function (event) {
         if (!isBrandDown) {
             return;
         }
@@ -890,15 +937,19 @@ if (brandsSlider) {
         brandsSlider.scrollLeft = brandScrollLeft - walk;
     });
 
-    brandsSlider.addEventListener('touchstart', function () {
-        stopBrandsAutoPlay();
-    }, { passive: true });
+    brandsSlider.addEventListener(
+        "touchstart",
+        function () {
+            stopBrandsAutoPlay();
+        },
+        { passive: true },
+    );
 
-    brandsSlider.addEventListener('touchend', function () {
+    brandsSlider.addEventListener("touchend", function () {
         startBrandsAutoPlay();
     });
 
-    window.addEventListener('resize', function () {
+    window.addEventListener("resize", function () {
         startBrandsAutoPlay();
     });
 
@@ -910,7 +961,7 @@ if (brandsSlider) {
 | Site Toast
 |--------------------------------------------------------------------------
 */
-const siteToast = document.getElementById('site-toast');
+const siteToast = document.getElementById("site-toast");
 let siteToastTimer = null;
 
 function showSiteToast(options = {}) {
@@ -918,14 +969,14 @@ function showSiteToast(options = {}) {
         return;
     }
 
-    const type = options.type || 'success';
-    const title = options.title || 'Success';
-    const message = options.message || 'Action completed successfully';
-    const icon = options.icon || '✓';
+    const type = options.type || "success";
+    const title = options.title || "Success";
+    const message = options.message || "Action completed successfully";
+    const icon = options.icon || "✓";
 
-    const titleElement = siteToast.querySelector('[data-toast-title]');
-    const messageElement = siteToast.querySelector('[data-toast-message]');
-    const iconElement = siteToast.querySelector('[data-toast-icon]');
+    const titleElement = siteToast.querySelector("[data-toast-title]");
+    const messageElement = siteToast.querySelector("[data-toast-message]");
+    const iconElement = siteToast.querySelector("[data-toast-icon]");
 
     if (titleElement) {
         titleElement.textContent = title;
@@ -939,25 +990,25 @@ function showSiteToast(options = {}) {
         iconElement.textContent = icon;
     }
 
-    siteToast.classList.remove('is-success', 'is-error', 'is-warning');
-    siteToast.classList.add('is-' + type);
-    siteToast.classList.add('is-visible');
+    siteToast.classList.remove("is-success", "is-error", "is-warning");
+    siteToast.classList.add("is-" + type);
+    siteToast.classList.add("is-visible");
 
     if (siteToastTimer) {
         clearTimeout(siteToastTimer);
     }
 
     siteToastTimer = setTimeout(function () {
-        siteToast.classList.remove('is-visible');
+        siteToast.classList.remove("is-visible");
     }, options.duration || 2600);
 }
 
 window.showSiteToast = showSiteToast;
 
-window.addEventListener('site-toast', function (event) {
+window.addEventListener("site-toast", function (event) {
     showSiteToast(event.detail || {});
 });
 
-window.addEventListener('notify', function (event) {
+window.addEventListener("notify", function (event) {
     showSiteToast(event.detail || {});
 });
