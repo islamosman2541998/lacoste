@@ -31,20 +31,25 @@ class StoreNotificationService
 
         $body = app()->getLocale() === 'ar'
             ? "تم إنشاء طلب جديد.\n\n"
-                . "رقم الطلب: {$order->order_number}\n"
-                . "العميل: {$order->customer_name}\n"
-                . "الهاتف: {$order->customer_phone}\n"
-                . "الإجمالي: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
-                . "رابط متابعة الطلب:\n{$orderUrl}"
+            . "رقم الطلب: {$order->order_number}\n"
+            . "العميل: {$order->customer_name}\n"
+            . "الهاتف: {$order->customer_phone}\n"
+            . "الإجمالي: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
+            . "رابط متابعة الطلب:\n{$orderUrl}"
             : "A new order has been created.\n\n"
-                . "Order Number: {$order->order_number}\n"
-                . "Customer: {$order->customer_name}\n"
-                . "Phone: {$order->customer_phone}\n"
-                . "Total: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
-                . "Order tracking link:\n{$orderUrl}";
+            . "Order Number: {$order->order_number}\n"
+            . "Customer: {$order->customer_name}\n"
+            . "Phone: {$order->customer_phone}\n"
+            . "Total: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
+            . "Order tracking link:\n{$orderUrl}";
 
         Mail::to($settings->adminEmail())
-            ->send(new StoreNotificationMail($subject, $body));
+            ->send(new StoreNotificationMail(
+                $subject,
+                $body,
+                $orderUrl,
+                app()->getLocale() === 'ar' ? 'عرض الطلب' : 'View Order'
+            ));
     }
 
     public function notifyCustomerNewOrder(Order $order): void
@@ -69,22 +74,27 @@ class StoreNotificationService
 
         $body = app()->getLocale() === 'ar'
             ? "مرحبًا {$order->customer_name}،\n\n"
-                . "تم استلام طلبك بنجاح ✅\n\n"
-                . "رقم الطلب: {$order->order_number}\n"
-                . "الإجمالي: " . $this->formatMoney((float) $order->grand_total) . "\n"
-                . "حالة الطلب: قيد المراجعة\n\n"
-                . "يمكنك متابعة الطلب من هنا:\n{$orderUrl}\n\n"
-                . "قد يُطلب منك إدخال رقم الهاتف للتأكيد عند فتح الرابط."
+            . "تم استلام طلبك بنجاح ✅\n\n"
+            . "رقم الطلب: {$order->order_number}\n"
+            . "الإجمالي: " . $this->formatMoney((float) $order->grand_total) . "\n"
+            . "حالة الطلب: قيد المراجعة\n\n"
+            . "يمكنك متابعة الطلب من هنا:\n{$orderUrl}\n\n"
+            . "قد يُطلب منك إدخال رقم الهاتف للتأكيد عند فتح الرابط."
             : "Hello {$order->customer_name},\n\n"
-                . "Your order has been received successfully ✅\n\n"
-                . "Order Number: {$order->order_number}\n"
-                . "Total: " . $this->formatMoney((float) $order->grand_total) . "\n"
-                . "Order Status: Pending\n\n"
-                . "You can track your order here:\n{$orderUrl}\n\n"
-                . "You may be asked to enter your phone number for verification.";
+            . "Your order has been received successfully ✅\n\n"
+            . "Order Number: {$order->order_number}\n"
+            . "Total: " . $this->formatMoney((float) $order->grand_total) . "\n"
+            . "Order Status: Pending\n\n"
+            . "You can track your order here:\n{$orderUrl}\n\n"
+            . "You may be asked to enter your phone number for verification.";
 
         Mail::to($order->customer_email)
-            ->send(new StoreNotificationMail($subject, $body));
+            ->send(new StoreNotificationMail(
+                $subject,
+                $body,
+                $orderUrl,
+                app()->getLocale() === 'ar' ? 'متابعة الطلب' : 'Track Order'
+            ));
     }
 
     public function notifyAdminNewPayment(Order $order): void
@@ -109,15 +119,15 @@ class StoreNotificationService
 
         $body = app()->getLocale() === 'ar'
             ? "تم تسجيل دفعة على الطلب.\n\n"
-                . "رقم الطلب: {$order->order_number}\n"
-                . "العميل: {$order->customer_name}\n"
-                . "الإجمالي: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
-                . "رابط متابعة الطلب:\n{$orderUrl}"
+            . "رقم الطلب: {$order->order_number}\n"
+            . "العميل: {$order->customer_name}\n"
+            . "الإجمالي: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
+            . "رابط متابعة الطلب:\n{$orderUrl}"
             : "A payment has been recorded for an order.\n\n"
-                . "Order Number: {$order->order_number}\n"
-                . "Customer: {$order->customer_name}\n"
-                . "Total: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
-                . "Order tracking link:\n{$orderUrl}";
+            . "Order Number: {$order->order_number}\n"
+            . "Customer: {$order->customer_name}\n"
+            . "Total: " . $this->formatMoney((float) $order->grand_total) . "\n\n"
+            . "Order tracking link:\n{$orderUrl}";
 
         Mail::to($settings->adminEmail())
             ->send(new StoreNotificationMail($subject, $body));
@@ -167,7 +177,12 @@ class StoreNotificationService
             : "\n\nYou can track your order here:\n{$orderUrl}";
 
         Mail::to($order->customer_email)
-            ->send(new StoreNotificationMail($subject, $body));
+            ->send(new StoreNotificationMail(
+                $subject,
+                $body,
+                $orderUrl,
+                app()->getLocale() === 'ar' ? 'متابعة الطلب' : 'Track Order'
+            ));
     }
 
     public function notifyCustomerInvoiceCreated(Invoice $invoice): void
