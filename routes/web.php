@@ -26,6 +26,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     ->name('site.orders.show');
     Route::view('/track-order', 'site.pages.orders.track')
     ->name('site.orders.track');
+    Route::view('/my-orders', 'site.pages.customer.orders')
+    ->name('site.customer.orders');
 Route::get('/switch-language/{locale}', function ($locale) {
     if (! in_array($locale, ['en', 'ar'])) {
         abort(400);

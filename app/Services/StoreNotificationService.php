@@ -50,6 +50,7 @@ class StoreNotificationService
                 $orderUrl,
                 app()->getLocale() === 'ar' ? 'عرض الطلب' : 'View Order'
             ));
+            app(WhatsappNotificationService::class)->notifyAdminNewOrder($order);
     }
 
     public function notifyCustomerNewOrder(Order $order): void
@@ -95,6 +96,7 @@ class StoreNotificationService
                 $orderUrl,
                 app()->getLocale() === 'ar' ? 'متابعة الطلب' : 'Track Order'
             ));
+            app(WhatsappNotificationService::class)->notifyCustomerNewOrder($order);
     }
 
     public function notifyAdminNewPayment(Order $order): void
@@ -131,6 +133,7 @@ class StoreNotificationService
 
         Mail::to($settings->adminEmail())
             ->send(new StoreNotificationMail($subject, $body));
+            app(WhatsappNotificationService::class)->notifyAdminNewPayment($order);
     }
 
     public function notifyCustomerOrderStatus(Order $order): void
@@ -183,6 +186,7 @@ class StoreNotificationService
                 $orderUrl,
                 app()->getLocale() === 'ar' ? 'متابعة الطلب' : 'Track Order'
             ));
+            app(WhatsappNotificationService::class)->notifyCustomerOrderStatus($order);
     }
 
     public function notifyCustomerInvoiceCreated(Invoice $invoice): void

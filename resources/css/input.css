@@ -2640,6 +2640,154 @@
     .track-order-back {
         @apply mt-5 inline-flex text-sm font-black text-muted transition hover:text-brand;
     }
+
+    .customer-orders-page {
+        @apply bg-soft pb-16 pt-36 md:pt-40;
+    }
+
+    .customer-orders-head {
+        @apply mb-8 flex flex-col gap-5 rounded-[30px] bg-dark p-6 text-white shadow-soft md:flex-row md:items-center md:justify-between md:p-8;
+    }
+
+    .customer-orders-breadcrumb {
+        @apply mb-4 flex items-center gap-2 text-xs font-black text-white/50;
+    }
+
+    .customer-orders-breadcrumb a {
+        @apply text-white/60 hover:text-brand;
+    }
+
+    .customer-orders-head h1 {
+        @apply text-3xl font-black md:text-5xl;
+    }
+
+    .customer-orders-head p {
+        @apply mt-3 max-w-2xl text-sm leading-7 text-white/65;
+    }
+
+    .customer-orders-head>a {
+        @apply inline-flex h-12 shrink-0 items-center justify-center rounded-2xl bg-brand px-5 text-sm font-black text-white transition hover:bg-brand-dark;
+    }
+
+    .customer-orders-verify-card,
+    .customer-orders-empty {
+        @apply mx-auto max-w-2xl rounded-[34px] bg-white p-8 text-center shadow-soft md:p-10;
+    }
+
+    .customer-orders-verify-icon {
+        @apply mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-orange-50 text-brand;
+    }
+
+    .customer-orders-verify-card h2,
+    .customer-orders-empty h2 {
+        @apply text-3xl font-black text-dark;
+    }
+
+    .customer-orders-verify-card p,
+    .customer-orders-empty p {
+        @apply mx-auto mt-3 max-w-xl text-sm font-bold leading-8 text-muted;
+    }
+
+    .customer-orders-verify-form {
+        @apply mt-8 grid gap-4 text-start;
+    }
+
+    .customer-orders-verify-form label {
+        @apply mb-2 block text-sm font-black text-dark;
+    }
+
+    .customer-orders-verify-form input {
+        @apply h-12 w-full rounded-2xl border border-gray-100 bg-soft px-4 text-sm font-bold text-dark outline-none transition focus:border-brand focus:bg-white;
+    }
+
+    .customer-orders-verify-form span {
+        @apply mt-2 block text-xs font-bold text-red-500;
+    }
+
+    .customer-orders-verify-form button,
+    .customer-orders-empty a {
+        @apply mt-2 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-brand px-6 text-sm font-black text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .customer-orders-list {
+        @apply space-y-4;
+    }
+
+    .customer-order-card {
+        @apply rounded-[28px] border border-gray-100 bg-white p-5 shadow-soft;
+    }
+
+    .customer-order-main {
+        @apply flex flex-col gap-4 border-b border-gray-100 pb-5 md:flex-row md:items-start md:justify-between;
+    }
+
+    .customer-order-label {
+        @apply text-xs font-black uppercase tracking-wide text-muted;
+    }
+
+    .customer-order-main h2 {
+        @apply mt-1 text-2xl font-black text-dark;
+    }
+
+    .customer-order-main p {
+        @apply mt-2 text-sm font-bold text-muted;
+    }
+
+    .customer-order-badges {
+        @apply flex flex-wrap gap-2;
+    }
+
+    .customer-order-badge {
+        @apply rounded-full px-4 py-2 text-xs font-black;
+    }
+
+    .customer-order-badge.success {
+        @apply bg-emerald-100 text-emerald-700;
+    }
+
+    .customer-order-badge.info {
+        @apply bg-blue-100 text-blue-700;
+    }
+
+    .customer-order-badge.warning {
+        @apply bg-orange-100 text-orange-700;
+    }
+
+    .customer-order-badge.danger {
+        @apply bg-red-100 text-red-700;
+    }
+
+    .customer-order-badge.gray {
+        @apply bg-gray-100 text-gray-700;
+    }
+
+    .customer-order-meta {
+        @apply grid gap-3 border-b border-gray-100 py-5 sm:grid-cols-3;
+    }
+
+    .customer-order-meta div {
+        @apply rounded-2xl bg-soft p-4;
+    }
+
+    .customer-order-meta span {
+        @apply block text-xs font-black text-muted;
+    }
+
+    .customer-order-meta strong {
+        @apply mt-1 block text-lg font-black text-dark;
+    }
+
+    .customer-order-actions {
+        @apply pt-5;
+    }
+
+    .customer-order-actions button {
+        @apply inline-flex h-11 items-center justify-center rounded-2xl bg-dark px-5 text-sm font-black text-white transition hover:bg-brand disabled:opacity-60;
+    }
+
+    .customer-orders-pagination {
+        @apply mt-8;
+    }
 }
 
 @keyframes announcement-marquee-ltr {
