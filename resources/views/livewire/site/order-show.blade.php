@@ -1,10 +1,10 @@
 @php
-    $currency = $storeSettings->currency_symbol ?? $storeSettings->currency_code ?? 'EGP';
+    $currency = $storeSettings->currency_symbol ?? ($storeSettings->currency_code ?? 'EGP');
 @endphp
 
 <section class="order-show-page">
     <div class="site-container">
-        @if (! $verified)
+        @if (!$verified)
             <div class="order-verify-card">
                 <h1>
                     {{ app()->getLocale() === 'ar' ? 'التحقق من الطلب' : 'Verify Order' }}
@@ -17,11 +17,8 @@
                 </p>
 
                 <div class="order-verify-form">
-                    <input
-                        type="text"
-                        wire:model.defer="phone"
-                        placeholder="{{ app()->getLocale() === 'ar' ? 'رقم الهاتف' : 'Phone number' }}"
-                    >
+                    <input type="text" wire:model.defer="phone"
+                        placeholder="{{ app()->getLocale() === 'ar' ? 'رقم الهاتف' : 'Phone number' }}">
 
                     <button type="button" wire:click="verifyOrder" wire:loading.attr="disabled">
                         <span wire:loading.remove>
@@ -38,16 +35,14 @@
                     <span class="order-verify-error">{{ $message }}</span>
                 @enderror
             </div>
-        @elseif (! $order)
+        @elseif (!$order)
             <div class="order-verify-card">
                 <h1>
                     {{ app()->getLocale() === 'ar' ? 'الطلب غير موجود' : 'Order not found' }}
                 </h1>
 
                 <p>
-                    {{ app()->getLocale() === 'ar'
-                        ? 'لم نتمكن من العثور على هذا الطلب.'
-                        : 'We could not find this order.' }}
+                    {{ app()->getLocale() === 'ar' ? 'لم نتمكن من العثور على هذا الطلب.' : 'We could not find this order.' }}
                 </p>
 
                 <a href="{{ route('site.shop') }}">
@@ -89,7 +84,48 @@
                     </span>
                 </div>
             </div>
+            <div class="order-timeline-card">
+                <div class="order-timeline-title">
+                    <h2>
+                        {{ app()->getLocale() === 'ar' ? 'حالة الطلب' : 'Order Status' }}
+                    </h2>
 
+                    <p>
+                        {{ app()->getLocale() === 'ar' ? 'تابع مراحل طلبك خطوة بخطوة' : 'Track your order progress step by step' }}
+                    </p>
+                </div>
+
+                <div class="order-timeline">
+                    @foreach ($this->timelineSteps($order) as $step)
+                        <div
+                            class="order-timeline-step
+                    {{ $step['done'] ? 'is-done' : '' }}
+                    {{ $step['active'] ? 'is-active' : '' }}
+                    {{ $step['danger'] ? 'is-danger' : '' }}">
+                            <div class="order-timeline-dot">
+                                @if ($step['done'])
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="3"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                @else
+                                    <span></span>
+                                @endif
+                            </div>
+
+                            <div class="order-timeline-content">
+                                <strong>{{ $step['label'] }}</strong>
+
+                                @if ($step['date'])
+                                    <span>{{ $step['date']->format('Y-m-d H:i') }}</span>
+                                @else
+                                    <span>-</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
             <div class="order-show-layout">
                 <div class="order-main-card">
                     <h2>
@@ -104,15 +140,14 @@
                                 $variantSnapshot = $snapshot['variant'] ?? [];
                                 $attributes = $variantSnapshot['attributes'] ?? [];
 
-                                $productName = $item->product_name
-                                    ?? $productSnapshot['name']
-                                    ?? (app()->getLocale() === 'ar' ? 'منتج' : 'Product');
+                                $productName =
+                                    $item->product_name ??
+                                    ($productSnapshot['name'] ?? (app()->getLocale() === 'ar' ? 'منتج' : 'Product'));
 
-                                $image = $variantSnapshot['image']
-                                    ?? $productSnapshot['image']
-                                    ?? $item->variant?->image
-                                    ?? $item->product?->main_image
-                                    ?? null;
+                                $image =
+                                    $variantSnapshot['image'] ??
+                                    ($productSnapshot['image'] ??
+                                        ($item->variant?->image ?? ($item->product?->main_image ?? null)));
                             @endphp
 
                             <div class="order-item-card">
@@ -172,17 +207,20 @@
 
                             <div>
                                 <span>{{ app()->getLocale() === 'ar' ? 'الخصم' : 'Discount' }}</span>
-                                <strong>{{ number_format((float) $order->discount_total, 2) }} {{ $currency }}</strong>
+                                <strong>{{ number_format((float) $order->discount_total, 2) }}
+                                    {{ $currency }}</strong>
                             </div>
 
                             <div>
                                 <span>{{ app()->getLocale() === 'ar' ? 'الشحن' : 'Shipping' }}</span>
-                                <strong>{{ number_format((float) $order->shipping_total, 2) }} {{ $currency }}</strong>
+                                <strong>{{ number_format((float) $order->shipping_total, 2) }}
+                                    {{ $currency }}</strong>
                             </div>
 
                             <div>
                                 <span>{{ app()->getLocale() === 'ar' ? 'رسوم الدفع' : 'Payment fee' }}</span>
-                                <strong>{{ number_format((float) $order->payment_fee, 2) }} {{ $currency }}</strong>
+                                <strong>{{ number_format((float) $order->payment_fee, 2) }}
+                                    {{ $currency }}</strong>
                             </div>
 
                             <div>

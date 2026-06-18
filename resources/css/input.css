@@ -2788,6 +2788,103 @@
     .customer-orders-pagination {
         @apply mt-8;
     }
+    .order-timeline-card {
+    @apply mb-8 rounded-[30px] border border-gray-100 bg-white p-6 shadow-soft md:p-8;
+}
+
+.order-timeline-title {
+    @apply mb-6;
+}
+
+.order-timeline-title h2 {
+    @apply text-2xl font-black text-dark;
+}
+
+.order-timeline-title p {
+    @apply mt-2 text-sm font-bold text-muted;
+}
+
+.order-timeline {
+    @apply grid gap-4 md:grid-cols-5;
+}
+
+.order-timeline-step {
+    @apply relative rounded-2xl border border-gray-100 bg-soft p-4 text-center transition;
+}
+
+.order-timeline-step::before {
+    content: "";
+    @apply absolute top-8 hidden h-1 bg-gray-100 md:block;
+    width: calc(100% + 1rem);
+    inset-inline-start: 50%;
+    z-index: 0;
+}
+
+.order-timeline-step:last-child::before {
+    display: none;
+}
+
+.order-timeline-step.is-done::before {
+    @apply bg-brand/30;
+}
+
+.order-timeline-dot {
+    @apply relative z-10 mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border-4 border-white bg-gray-200 text-white shadow;
+}
+
+.order-timeline-dot span {
+    @apply block h-2 w-2 rounded-full bg-white;
+}
+
+.order-timeline-step.is-done .order-timeline-dot {
+    @apply bg-brand;
+}
+
+.order-timeline-step.is-active {
+    @apply border-brand bg-orange-50;
+}
+
+.order-timeline-step.is-active .order-timeline-dot {
+    @apply bg-dark;
+}
+
+.order-timeline-step.is-danger {
+    @apply border-red-200 bg-red-50;
+}
+
+.order-timeline-step.is-danger .order-timeline-dot {
+    @apply bg-red-500;
+}
+
+.order-timeline-content strong {
+    @apply block text-sm font-black text-dark;
+}
+
+.order-timeline-content span {
+    @apply mt-1 block text-xs font-bold text-muted;
+}
+
+.order-timeline-step.is-active .order-timeline-content strong {
+    @apply text-brand;
+}
+
+.order-timeline-step.is-danger .order-timeline-content strong {
+    @apply text-red-600;
+}
+
+@media (max-width: 767px) {
+    .order-timeline {
+        @apply grid-cols-1;
+    }
+
+    .order-timeline-step {
+        @apply flex items-center gap-4 text-start;
+    }
+
+    .order-timeline-dot {
+        @apply mx-0 mb-0 shrink-0;
+    }
+}
 }
 
 @keyframes announcement-marquee-ltr {

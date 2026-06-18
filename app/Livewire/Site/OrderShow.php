@@ -163,6 +163,82 @@ class OrderShow extends Component
             ])
             ->first();
     }
+    public function timelineSteps(Order $order): array
+{
+    $locale = app()->getLocale();
+
+    if (in_array($order->status, ['cancelled', 'returned'], true)) {
+        return [
+            [
+                'key' => 'created',
+                'label' => $locale === 'ar' ? 'تم إنشاء الطلب' : 'Order Created',
+                'date' => $order->created_at,
+                'done' => true,
+                'active' => false,
+                'danger' => false,
+            ],
+            [
+                'key' => $order->status,
+                'label' => $order->status === 'cancelled'
+                    ? ($locale === 'ar' ? 'تم إلغاء الطلب' : 'Order Cancelled')
+                    : ($locale === 'ar' ? 'تم إرجاع الطلب' : 'Order Returned'),
+                'date' => $order->cancelled_at ?? $order->updated_at,
+                'done' => true,
+                'active' => true,
+                'danger' => true,
+            ],
+        ];
+    }
+
+    $steps = [
+        [
+            'key' => 'pending',
+            'label' => $locale === 'ar' ? 'تم إنشاء الطلب' : 'Order Created',
+            'date' => $order->created_at,
+        ],
+        [
+            'key' => 'confirmed',
+            'label' => $locale === 'ar' ? 'تم تأكيد الطلب' : 'Order Confirmed',
+            'date' => $order->confirmed_at,
+        ],
+        [
+            'key' => 'processing',
+            'label' => $locale === 'ar' ? 'جاري تجهيز الطلب' : 'Processing',
+            'date' => null,
+        ],
+        [
+            'key' => 'shipped',
+            'label' => $locale === 'ar' ? 'تم الشحن' : 'Shipped',
+            'date' => $order->shipped_at,
+        ],
+        [
+            'key' => 'delivered',
+            'label' => $locale === 'ar' ? 'تم التسليم' : 'Delivered',
+            'date' => $order->delivered_at,
+        ],
+    ];
+
+    $currentIndex = match ($order->status) {
+        'pending' => 0,
+        'confirmed' => 1,
+        'processing' => 2,
+        'shipped' => 3,
+        'delivered' => 4,
+        default => 0,
+    };
+
+    return collect($steps)
+        ->map(function (array $step, int $index) use ($currentIndex, $order) {
+            return [
+                ...$step,
+                'done' => $index <= $currentIndex,
+                'active' => $index === $currentIndex,
+                'danger' => false,
+                'date' => $step['date'] ?: ($index === $currentIndex ? $order->updated_at : null),
+            ];
+        })
+        ->toArray();
+}
 
     public function render()
     {
