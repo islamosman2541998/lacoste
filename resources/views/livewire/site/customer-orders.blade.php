@@ -48,7 +48,7 @@
 
                 <p>
                     {{ app()->getLocale() === 'ar'
-                        ? 'أدخل رقم الهاتف اوالبريد الإلكتروني المستخدمين أثناء الطلب لعرض جميع طلباتك.'
+                        ? 'أدخل رقم الهاتف او البريد الإلكتروني المستخدمين أثناء الطلب لعرض جميع طلباتك.'
                         : 'Enter the phone number or email used during checkout to view all your orders.' }}
                 </p>
 
