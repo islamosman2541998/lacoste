@@ -1,5 +1,5 @@
 <a
-    href="#"
+    href="{{ route('site.cart') }}"
     class="site-header-icon relative"
     aria-label="{{ __('admin.cart') }}"
 >

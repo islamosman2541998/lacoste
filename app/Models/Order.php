@@ -21,6 +21,7 @@ class Order extends Model
         'status',
         'payment_status',
         'payment_method',
+        'payment_fee',
         'coupon_used_at',
         'subtotal',
         'discount_total',
@@ -54,6 +55,7 @@ class Order extends Model
         'cancelled_at' => 'datetime',
         'stock_deducted_at' => 'datetime',
         'coupon_used_at' => 'datetime',
+        'payment_fee' => 'decimal:2',
 
     ];
 

@@ -19,6 +19,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
 
     Route::view('/shop', 'site.pages.shop.index')->name('site.shop');
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('site.products.show');
+    Route::view('/cart', 'site.pages.cart.index')->name('site.cart');
+    Route::view('/checkout', 'site.pages.checkout.index')->name('site.checkout');
 Route::get('/switch-language/{locale}', function ($locale) {
     if (! in_array($locale, ['en', 'ar'])) {
         abort(400);

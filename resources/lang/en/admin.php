@@ -951,6 +951,15 @@ return [
 'announcement_bar_speed' => 'Animation Speed',
 'open_in_new_tab' => 'Open in New Tab',
 'seconds' => 'seconds',
+'reject_payment' => 'Reject Payment',
+'payment_rejected' => 'Payment Rejected',
+'payment_rejected_message' => 'Payment Rejected Message',
+'payment_rejected_message_placeholder' => 'Enter Payment Rejected Message',
+'approve_payment' => 'Approve Payment',
+'view_payment_proof' => 'View Payment Proof',
+'payment_pending_review' => 'Payment Pending Review',
+'payment_approved_successfully' => 'Payment Approved Successfully',
+'payment_rejected_successfully' => 'Payment Rejected Successfully',
 
 
 ];

@@ -9,6 +9,8 @@ use App\Models\ProductVariant;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
+use App\Services\ProductPricingService;
+use App\Services\StockService;
 
 class AddToCartButton extends Component
 {
@@ -90,7 +92,7 @@ class AddToCartButton extends Component
             return;
         }
 
-        if (! $this->isAvailableForQuantity($product, $variant, $requestedQuantity)) {
+        if (! app(StockService::class)->canAddToCart($product, $variant, $requestedQuantity)) {
             $this->dispatch(
                 'site-toast',
                 type: 'error',
@@ -130,7 +132,11 @@ class AddToCartButton extends Component
             ]
         );
 
-        $unitPrice = $this->getUnitPrice($product, $variant);
+        $pricing = $variant
+            ? app(ProductPricingService::class)->getVariantPrice($variant)
+            : app(ProductPricingService::class)->getProductPrice($product);
+
+        $unitPrice = (float) $pricing['final_price'];
 
         $itemQuery = CartItem::query()
             ->where('cart_id', $cart->id)
@@ -147,7 +153,12 @@ class AddToCartButton extends Component
         $currentQuantityInCart = $item ? (int) $item->quantity : 0;
         $newQuantity = $currentQuantityInCart + $requestedQuantity;
 
-        if (! $this->isAvailableForQuantity($product, $variant, $newQuantity)) {
+        if (! app(StockService::class)->canAddToCart(
+            product: $product,
+            variant: $variant,
+            requestedQuantity: $requestedQuantity,
+            currentCartQuantity: $currentQuantityInCart
+        )) {
             $this->dispatch(
                 'site-toast',
                 type: 'error',
@@ -166,7 +177,7 @@ class AddToCartButton extends Component
                 'quantity' => $newQuantity,
                 'unit_price' => $unitPrice,
                 'subtotal' => $newQuantity * $unitPrice,
-                'snapshot' => $this->productSnapshot($product, $variant, $unitPrice, $newQuantity),
+                'snapshot' => $this->productSnapshot($product, $variant, $pricing, $newQuantity),
             ]);
         } else {
             CartItem::query()->create([
@@ -176,7 +187,7 @@ class AddToCartButton extends Component
                 'quantity' => $requestedQuantity,
                 'unit_price' => $unitPrice,
                 'subtotal' => $requestedQuantity * $unitPrice,
-                'snapshot' => $this->productSnapshot($product, $variant, $unitPrice, $requestedQuantity),
+                'snapshot' => $this->productSnapshot($product, $variant, $pricing, $requestedQuantity),
             ]);
         }
 
@@ -197,55 +208,9 @@ class AddToCartButton extends Component
         );
     }
 
-    private function isAvailableForQuantity(Product $product, ?ProductVariant $variant, int $quantity): bool
-    {
-        if (! $product->manage_stock) {
-            return true;
-        }
 
-        if ($product->allow_backorder) {
-            return true;
-        }
 
-        $stockQuantity = $variant
-            ? (int) $variant->stock_quantity
-            : (int) $product->stock_quantity;
 
-        return $stockQuantity >= $quantity;
-    }
-
-    private function getUnitPrice(Product $product, ?ProductVariant $variant): float
-    {
-        $originalPrice = $variant
-            ? (float) $variant->price
-            : (float) $product->price;
-
-        $bestPrice = $originalPrice;
-
-        $salePrice = null;
-
-        if ($variant) {
-            $salePrice = $variant->sale_price ? (float) $variant->sale_price : null;
-        } else {
-            $salePrice = $product->sale_price ? (float) $product->sale_price : null;
-        }
-
-        if ($salePrice && $salePrice > 0 && $salePrice < $originalPrice) {
-            $bestPrice = $salePrice;
-        }
-
-        $runningDiscounts = $this->runningDiscounts($product, $variant);
-
-        foreach ($runningDiscounts as $discount) {
-            $discountPrice = $discount->calculateSalePrice($originalPrice);
-
-            if ($discountPrice > 0 && $discountPrice < $bestPrice) {
-                $bestPrice = $discountPrice;
-            }
-        }
-
-        return round($bestPrice, 2);
-    }
 
     private function runningDiscounts(Product $product, ?ProductVariant $variant): Collection
     {
@@ -277,7 +242,7 @@ class AddToCartButton extends Component
             ->values();
     }
 
-   private function productSnapshot(Product $product, ?ProductVariant $variant, float $unitPrice, int $quantity): array
+    private function productSnapshot(Product $product, ?ProductVariant $variant, array $pricing, int $quantity): array
     {
         $productTranslation = $product->transNow
             ?? $product->arabicTranslation
@@ -311,7 +276,12 @@ class AddToCartButton extends Component
                 'attributes' => $this->variantAttributesSnapshot($variant),
             ] : null,
 
-            'unit_price' => $unitPrice,
+            'unit_price' => (float) $pricing['final_price'],
+            'original_unit_price' => (float) $pricing['original_price'],
+            'discount_amount' => (float) $pricing['discount_amount'],
+            'discount_source' => $pricing['discount_source'],
+            'flash_sale_item_id' => $pricing['flash_sale_item_id'],
+            'product_discount_id' => $pricing['product_discount_id'],
             'quantity' => $quantity,
         ];
     }

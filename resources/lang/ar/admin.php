@@ -953,5 +953,14 @@ return [
 'announcement_bar_speed' => 'سرعة الحركة',
 'open_in_new_tab' => 'فتح في تبويب جديد',
 'seconds' => 'ثانية',
+'reject_payment' => 'رفض الدفعة',
+'payment_rejected' => 'رفض الدفعة',
+'payment_rejected_message' => 'رسالة رفض الدفعة',
+'payment_rejected_message_placeholder' => 'ادخل رسالة رفض الدفعة',
+'approve_payment' => 'قبول الدفعة',
+'view_payment_proof' => 'اظهار وثائق الدفعة',
+'payment_pending_review' => 'الدفعة قيد المراجعة',
+'payment_approved_successfully' => 'تم قبول الدفعة بنجاح',
+'payment_rejected_successfully' => 'تم رفض الدفعة بنجاح',
 
 ];

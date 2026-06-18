@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
+use App\Services\CouponService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
-use App\Services\CouponService;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentsRelationManager extends RelationManager
 {
@@ -33,14 +35,16 @@ class PaymentsRelationManager extends RelationManager
                                 'manual' => __('admin.manual_payment'),
                             ])
                             ->required()
-                            ->default(fn() => $this->ownerRecord->payment_method ?? 'cash_on_delivery'),
+                            ->default(fn () => $this->ownerRecord->payment_method ?? 'cash_on_delivery'),
 
                         Forms\Components\Select::make('status')
                             ->label(__('admin.payment_status'))
                             ->options([
                                 'pending' => __('admin.payment_pending'),
+                                'pending_review' => __('admin.payment_pending_review'),
                                 'paid' => __('admin.payment_paid'),
                                 'failed' => __('admin.payment_failed'),
+                                'rejected' => __('admin.payment_rejected'),
                                 'refunded' => __('admin.payment_refunded'),
                             ])
                             ->required()
@@ -50,13 +54,17 @@ class PaymentsRelationManager extends RelationManager
                                 if ($state === 'paid') {
                                     $set('paid_at', now());
                                 }
+
+                                if (in_array($state, ['pending', 'pending_review', 'failed', 'rejected', 'refunded'], true)) {
+                                    $set('paid_at', null);
+                                }
                             }),
 
                         Forms\Components\TextInput::make('amount')
                             ->label(__('admin.amount'))
                             ->numeric()
                             ->required()
-                            ->default(fn() => $this->ownerRecord->grand_total)
+                            ->default(fn () => $this->ownerRecord->grand_total)
                             ->prefix('EGP'),
 
                         Forms\Components\TextInput::make('transaction_reference')
@@ -65,10 +73,13 @@ class PaymentsRelationManager extends RelationManager
 
                         Forms\Components\FileUpload::make('payment_proof')
                             ->label(__('admin.payment_proof'))
-                            ->directory('payments/proofs')
+                            ->directory('payment-proofs')
                             ->disk('public')
                             ->image()
                             ->imageEditor()
+                            ->imagePreviewHeight('180')
+                            ->openable()
+                            ->downloadable()
                             ->nullable()
                             ->columnSpanFull(),
 
@@ -93,23 +104,45 @@ class PaymentsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('method')
                     ->label(__('admin.payment_method'))
                     ->badge()
-                    ->formatStateUsing(fn($state) => __('admin.' . $state)),
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'cash_on_delivery' => __('admin.cash_on_delivery'),
+                        'bank_transfer' => __('admin.bank_transfer'),
+                        'wallet_transfer' => __('admin.wallet_transfer'),
+                        'manual' => __('admin.manual_payment'),
+                        default => $state,
+                    })
+                    ->color(fn ($state) => match ($state) {
+                        'cash_on_delivery' => 'warning',
+                        'bank_transfer' => 'info',
+                        'wallet_transfer' => 'success',
+                        'manual' => 'gray',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('admin.payment_status'))
                     ->badge()
-                    ->formatStateUsing(fn($state) => __('admin.payment_' . $state))
-                    ->color(fn($state) => match ($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'pending' => __('admin.payment_pending'),
+                        'pending_review' => __('admin.payment_pending_review'),
+                        'paid' => __('admin.payment_paid'),
+                        'failed' => __('admin.payment_failed'),
+                        'rejected' => __('admin.payment_rejected'),
+                        'refunded' => __('admin.payment_refunded'),
+                        default => $state,
+                    })
+                    ->color(fn ($state) => match ($state) {
                         'paid' => 'success',
                         'pending' => 'warning',
-                        'failed' => 'danger',
-                        'refunded' => 'info',
+                        'pending_review' => 'info',
+                        'failed', 'rejected' => 'danger',
+                        'refunded' => 'gray',
                         default => 'gray',
                     }),
 
                 Tables\Columns\TextColumn::make('amount')
                     ->label(__('admin.amount'))
-                    ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ',') . ' EGP')
+                    ->formatStateUsing(fn ($state) => number_format((float) $state, 2, '.', ',') . ' EGP')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('transaction_reference')
@@ -120,6 +153,7 @@ class PaymentsRelationManager extends RelationManager
                 Tables\Columns\ImageColumn::make('payment_proof')
                     ->label(__('admin.payment_proof'))
                     ->disk('public')
+                    ->height(56)
                     ->square()
                     ->placeholder('-'),
 
@@ -137,13 +171,64 @@ class PaymentsRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->label(__('admin.add_payment'))
-                    ->after(function ($record): void {
+                    ->after(function (): void {
                         $this->syncOrderPaymentStatus();
                     }),
             ])
             ->actions([
+                Tables\Actions\Action::make('view_payment_proof')
+                    ->label(__('admin.view_payment_proof'))
+                    ->icon('heroicon-o-photo')
+                    ->color('info')
+                    ->visible(fn ($record) => filled($record->payment_proof))
+                    ->url(fn ($record) => $record->payment_proof
+                        ? Storage::disk('public')->url($record->payment_proof)
+                        : null
+                    )
+                    ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('approve_payment')
+                    ->label(__('admin.approve_payment'))
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) => $record->status !== 'paid')
+                    ->action(function ($record): void {
+                        $record->update([
+                            'status' => 'paid',
+                            'paid_at' => now(),
+                        ]);
+
+                        $this->syncOrderPaymentStatus();
+
+                        Notification::make()
+                            ->title(__('admin.payment_approved_successfully'))
+                            ->success()
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('reject_payment')
+                    ->label(__('admin.reject_payment'))
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) => ! in_array($record->status, ['paid', 'rejected', 'refunded'], true))
+                    ->action(function ($record): void {
+                        $record->update([
+                            'status' => 'rejected',
+                            'paid_at' => null,
+                        ]);
+
+                        $this->syncOrderPaymentStatus();
+
+                        Notification::make()
+                            ->title(__('admin.payment_rejected_successfully'))
+                            ->danger()
+                            ->send();
+                    }),
+
                 Tables\Actions\EditAction::make()
-                    ->after(function ($record): void {
+                    ->after(function (): void {
                         $this->syncOrderPaymentStatus();
                     }),
 
@@ -167,14 +252,14 @@ class PaymentsRelationManager extends RelationManager
 
         $paidTotal = $order->payments
             ->where('status', 'paid')
-            ->sum(fn($payment) => (float) $payment->amount);
+            ->sum(fn ($payment) => (float) $payment->amount);
 
         $hasPending = $order->payments
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'pending_review'])
             ->isNotEmpty();
 
         $hasFailed = $order->payments
-            ->where('status', 'failed')
+            ->whereIn('status', ['failed', 'rejected'])
             ->isNotEmpty();
 
         $hasRefunded = $order->payments
@@ -193,12 +278,15 @@ class PaymentsRelationManager extends RelationManager
             $paymentStatus = 'failed';
         }
 
-        $latestPayment = $order->payments()->latest()->first();
+        $latestPayment = $order->payments()
+            ->latest()
+            ->first();
 
         $order->update([
             'payment_status' => $paymentStatus,
             'payment_method' => $latestPayment?->method ?? $order->payment_method,
         ]);
+
         if ($paymentStatus === 'paid') {
             app(CouponService::class)->markCouponAsUsedForOrder($order->fresh());
         }

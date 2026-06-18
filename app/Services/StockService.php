@@ -323,4 +323,65 @@ class StockService
             ]);
         });
     }
+    public function availableQuantity(Product $product, ?ProductVariant $variant = null): ?int
+    {
+        if (! $product->manage_stock) {
+            return null;
+        }
+
+        return $variant
+            ? (int) $variant->stock_quantity
+            : (int) $product->stock_quantity;
+    }
+
+    public function isInStock(Product $product, ?ProductVariant $variant = null): bool
+    {
+        if (! $product->manage_stock) {
+            return true;
+        }
+
+        if ($product->allow_backorder) {
+            return true;
+        }
+
+        return ($this->availableQuantity($product, $variant) ?? 0) > 0;
+    }
+
+    public function canAddToCart(
+        Product $product,
+        ?ProductVariant $variant,
+        int $requestedQuantity,
+        int $currentCartQuantity = 0
+    ): bool {
+        if (! $product->manage_stock) {
+            return true;
+        }
+
+        if ($product->allow_backorder) {
+            return true;
+        }
+
+        $availableQuantity = $this->availableQuantity($product, $variant) ?? 0;
+
+        return $availableQuantity >= ($requestedQuantity + $currentCartQuantity);
+    }
+
+    public function stockLabel(Product $product, ?ProductVariant $variant = null): string
+    {
+        if (! $product->manage_stock) {
+            return app()->getLocale() === 'ar' ? 'متوفر' : 'In stock';
+        }
+
+        if ($product->allow_backorder) {
+            return app()->getLocale() === 'ar' ? 'متاح للطلب' : 'Available on backorder';
+        }
+
+        $availableQuantity = $this->availableQuantity($product, $variant) ?? 0;
+
+        if ($availableQuantity > 0) {
+            return app()->getLocale() === 'ar' ? 'متوفر' : 'In stock';
+        }
+
+        return app()->getLocale() === 'ar' ? 'نفد المخزون' : 'Out of stock';
+    }
 }

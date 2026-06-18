@@ -6,6 +6,8 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Support\Collection;
 use Livewire\Component;
+use App\Services\ProductPricingService;
+use App\Services\StockService;
 
 class ProductShow extends Component
 {
@@ -64,38 +66,39 @@ class ProductShow extends Component
         }
     }
 
-   public function selectAttributeValue($attributeId, $attributeValueId): void
-{
-    $attributeId = (string) $attributeId;
-    $attributeValueId = (string) $attributeValueId;
+    public function selectAttributeValue($attributeId, $attributeValueId): void
+    {
+        $attributeId = (string) $attributeId;
+        $attributeValueId = (string) $attributeValueId;
 
-    $this->selectedAttributes[$attributeId] = $attributeValueId;
+        $this->selectedAttributes[$attributeId] = $attributeValueId;
 
-    $product = $this->product();
+        $product = $this->product();
 
-    $matchingVariant = $this->findVariantBySelectedAttributes($product);
+        $matchingVariant = $this->findVariantBySelectedAttributes($product);
 
-    if ($matchingVariant) {
-        $this->selectedVariantId = $matchingVariant->id;
+        if ($matchingVariant) {
+            $this->selectedVariantId = $matchingVariant->id;
 
-        if ($matchingVariant->image) {
-            $this->selectedImage = $matchingVariant->image;
+            if ($matchingVariant->image) {
+                $this->selectedImage = $matchingVariant->image;
+            }
+
+            return;
         }
 
-        return;
+        $this->selectedVariantId = null;
+
+        $this->dispatch(
+            'site-toast',
+            type: 'warning',
+            icon: '!',
+            title: app()->getLocale() === 'ar' ? 'اختيار غير متاح' : 'Unavailable option',
+            message: app()->getLocale() === 'ar'
+                ? 'هذا الاختيار غير متوفر، جرّب اختيار قيمة أخرى'
+                : 'This combination is not available, please choose another option'
+        );
     }
-
-    $this->selectedVariantId = null;
-
-    $this->dispatch('site-toast',
-        type: 'warning',
-        icon: '!',
-        title: app()->getLocale() === 'ar' ? 'اختيار غير متاح' : 'Unavailable option',
-        message: app()->getLocale() === 'ar'
-            ? 'هذا الاختيار غير متوفر، جرّب اختيار قيمة أخرى'
-            : 'This combination is not available, please choose another option'
-    );
-}
 
     public function selectVariant(int $variantId, bool $updateImage = true): void
     {
@@ -187,52 +190,52 @@ class ProductShow extends Component
             ->firstWhere('id', $this->selectedVariantId);
     }
 
-  private function findVariantBySelectedAttributes(Product $product): ?ProductVariant
-{
-    $selectedAttributes = collect($this->selectedAttributes)
-        ->filter()
-        ->mapWithKeys(fn ($value, $key) => [(string) $key => (string) $value]);
+    private function findVariantBySelectedAttributes(Product $product): ?ProductVariant
+    {
+        $selectedAttributes = collect($this->selectedAttributes)
+            ->filter()
+            ->mapWithKeys(fn($value, $key) => [(string) $key => (string) $value]);
 
-    if ($selectedAttributes->isEmpty()) {
-        return null;
-    }
-
-    $variantGroups = $this->variantGroups($product);
-
-    $requiredAttributeIds = $variantGroups
-        ->pluck('id')
-        ->map(fn ($id) => (string) $id)
-        ->values();
-
-    foreach ($requiredAttributeIds as $attributeId) {
-        if (! $selectedAttributes->has($attributeId)) {
+        if ($selectedAttributes->isEmpty()) {
             return null;
         }
-    }
 
-    return $product->variants
-        ->where('is_active', true)
-        ->first(function ($variant) use ($selectedAttributes, $requiredAttributeIds) {
-            $variantAttributes = $variant->attributeValues
-                ->mapWithKeys(function ($item) {
-                    return [
-                        (string) $item->attribute_id => (string) $item->attribute_value_id,
-                    ];
-                });
+        $variantGroups = $this->variantGroups($product);
 
-            foreach ($requiredAttributeIds as $attributeId) {
-                if (! isset($variantAttributes[$attributeId])) {
-                    return false;
-                }
+        $requiredAttributeIds = $variantGroups
+            ->pluck('id')
+            ->map(fn($id) => (string) $id)
+            ->values();
 
-                if ((string) $variantAttributes[$attributeId] !== (string) $selectedAttributes[$attributeId]) {
-                    return false;
-                }
+        foreach ($requiredAttributeIds as $attributeId) {
+            if (! $selectedAttributes->has($attributeId)) {
+                return null;
             }
+        }
 
-            return true;
-        });
-}
+        return $product->variants
+            ->where('is_active', true)
+            ->first(function ($variant) use ($selectedAttributes, $requiredAttributeIds) {
+                $variantAttributes = $variant->attributeValues
+                    ->mapWithKeys(function ($item) {
+                        return [
+                            (string) $item->attribute_id => (string) $item->attribute_value_id,
+                        ];
+                    });
+
+                foreach ($requiredAttributeIds as $attributeId) {
+                    if (! isset($variantAttributes[$attributeId])) {
+                        return false;
+                    }
+
+                    if ((string) $variantAttributes[$attributeId] !== (string) $selectedAttributes[$attributeId]) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+    }
 
     private function variantGroups(Product $product): Collection
     {
@@ -423,37 +426,22 @@ class ProductShow extends Component
 
     private function priceData(Product $product, ?ProductVariant $variant): array
     {
-        $originalPrice = $variant
-            ? (float) $variant->price
-            : (float) $product->price;
+        $pricing = $variant
+            ? app(ProductPricingService::class)->getVariantPrice($variant)
+            : app(ProductPricingService::class)->getProductPrice($product);
 
-        $finalPrice = $originalPrice;
-
-        $salePrice = null;
-
-        if ($variant) {
-            $salePrice = $variant->sale_price ? (float) $variant->sale_price : null;
-        } else {
-            $salePrice = $product->sale_price ? (float) $product->sale_price : null;
-        }
-
-        if ($salePrice && $salePrice > 0 && $salePrice < $originalPrice) {
-            $finalPrice = $salePrice;
-        }
-
-        foreach ($this->runningDiscounts($product, $variant) as $discount) {
-            $discountPrice = $discount->calculateSalePrice($originalPrice);
-
-            if ($discountPrice > 0 && $discountPrice < $finalPrice) {
-                $finalPrice = $discountPrice;
-            }
-        }
+        $originalPrice = (float) $pricing['original_price'];
+        $finalPrice = (float) $pricing['final_price'];
 
         $hasSale = $finalPrice < $originalPrice;
 
         return [
             'original_price' => round($originalPrice, 2),
             'final_price' => round($finalPrice, 2),
+            'discount_amount' => (float) $pricing['discount_amount'],
+            'discount_source' => $pricing['discount_source'],
+            'flash_sale_item_id' => $pricing['flash_sale_item_id'],
+            'product_discount_id' => $pricing['product_discount_id'],
             'has_sale' => $hasSale,
             'discount_percentage' => $hasSale && $originalPrice > 0
                 ? round((($originalPrice - $finalPrice) / $originalPrice) * 100)
@@ -461,66 +449,32 @@ class ProductShow extends Component
         ];
     }
 
-    private function runningDiscounts(Product $product, ?ProductVariant $variant): Collection
+
+
+    private function stockData(Product $product, ?ProductVariant $variant): array
     {
-        $productDiscounts = $product->discounts
-            ->filter(function ($discount) use ($variant) {
-                if (! $discount->isRunning()) {
-                    return false;
-                }
+        $hasActiveVariants = $product->variants
+            ->where('is_active', true)
+            ->count() > 0;
 
-                if ($discount->product_variant_id && ! $variant) {
-                    return false;
-                }
+        if ($hasActiveVariants && ! $variant) {
+            return [
+                'quantity' => 0,
+                'in_stock' => false,
+                'allow_backorder' => false,
+                'invalid_selection' => true,
+                'label' => app()->getLocale() === 'ar' ? 'اختيار غير متاح' : 'Unavailable option',
+            ];
+        }
 
-                if ($discount->product_variant_id && $variant) {
-                    return (int) $discount->product_variant_id === (int) $variant->id;
-                }
-
-                return true;
-            });
-
-        $variantDiscounts = $variant
-            ? $variant->discounts->filter(fn($discount) => $discount->isRunning())
-            : collect();
-
-        return $productDiscounts
-            ->merge($variantDiscounts)
-            ->unique('id')
-            ->sortByDesc('priority')
-            ->values();
-    }
-
-   private function stockData(Product $product, ?ProductVariant $variant): array
-{
-    $hasActiveVariants = $product->variants
-        ->where('is_active', true)
-        ->count() > 0;
-
-    if ($hasActiveVariants && ! $variant) {
         return [
-            'quantity' => 0,
-            'in_stock' => false,
-            'allow_backorder' => false,
-            'invalid_selection' => true,
+            'quantity' => app(StockService::class)->availableQuantity($product, $variant),
+            'in_stock' => app(StockService::class)->isInStock($product, $variant),
+            'allow_backorder' => (bool) $product->allow_backorder,
+            'invalid_selection' => false,
+            'label' => app(StockService::class)->stockLabel($product, $variant),
         ];
     }
-
-    $stockQuantity = $variant
-        ? (int) $variant->stock_quantity
-        : (int) $product->stock_quantity;
-
-    $inStock = ! $product->manage_stock
-        || $stockQuantity > 0
-        || $product->allow_backorder;
-
-    return [
-        'quantity' => $stockQuantity,
-        'in_stock' => $inStock,
-        'allow_backorder' => (bool) $product->allow_backorder,
-        'invalid_selection' => false,
-    ];
-}
 
     private function relatedProducts(Product $product)
     {
