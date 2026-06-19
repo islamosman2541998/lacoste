@@ -183,23 +183,27 @@
                     </div>
 
                     <div class="product-show-actions">
-                        @livewire(
-                            'site.add-to-cart-button',
-                            [
-                                'productId' => $product->id,
-                                'variantId' => $selectedVariant?->id,
-                                'quantity' => $quantity,
-                            ],
-                            key('product-show-add-desktop-' . $product->id . '-' . ($selectedVariant?->id ?? 'base'))
-                        )
+                        <div class="product-show-add-action">
+                            @livewire(
+                                'site.add-to-cart-button',
+                                [
+                                    'productId' => $product->id,
+                                    'variantId' => $selectedVariant?->id,
+                                    'quantity' => $quantity,
+                                ],
+                                key('product-show-add-desktop-' . $product->id . '-' . ($selectedVariant?->id ?? 'base'))
+                            )
+                        </div>
 
-                        @livewire(
-                            'site.wishlist-button',
-                            [
-                                'productId' => $product->id,
-                            ],
-                            key('product-show-wishlist-' . $product->id)
-                        )
+                        <div class="product-show-wishlist-action">
+                            @livewire(
+                                'site.wishlist-button',
+                                [
+                                    'productId' => $product->id,
+                                ],
+                                key('product-show-wishlist-' . $product->id)
+                            )
+                        </div>
                     </div>
                 </div>
 
