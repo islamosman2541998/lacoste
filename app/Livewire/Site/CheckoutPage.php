@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
+
 class CheckoutPage extends Component
 {
     use WithFileUploads;
@@ -40,7 +41,11 @@ class CheckoutPage extends Component
     public string $city = '';
     public string $region = '';
     public string $notes = '';
+    public ?int $customer_address_id = null;
+    public bool $save_address_to_account = false;
 
+    public string $new_address_label = '';
+    public array $savedAddresses = [];
     public ?int $shipping_city_id = null;
 
     public string $payment_method = 'cash_on_delivery';
@@ -59,6 +64,7 @@ class CheckoutPage extends Component
     {
         $this->prefillCustomer();
         $this->syncDefaultPaymentMethod();
+        $this->prefillCustomerData();
     }
 
     public function updatedPaymentMethod(): void
@@ -214,18 +220,18 @@ class CheckoutPage extends Component
 
                 $subtotal = collect($pricingItems)->sum('subtotal');
 
-                $customer = $this->resolveCustomer();
+               $customer = $this->resolveCustomer();
 
-                $customerAddress = $this->saveCustomerAddress($customer);
+$customerAddressId = $this->resolveCheckoutAddressId($customer);
 
-                $city = ShippingCity::query()->find($this->shipping_city_id);
+$city = ShippingCity::query()->find($this->shipping_city_id);
 
                 $orderNumber = $this->generateOrderNumber();
 
                 $order = Order::query()->create([
                     'order_number' => $orderNumber,
                     'customer_id' => $customer->id,
-                    'customer_address_id' => $customerAddress->id,
+                    'customer_address_id' => $customerAddressId,
                     'customer_name' => $this->customer_name,
                     'customer_email' => $this->customer_email ?: null,
                     'customer_phone' => $this->customer_phone,
@@ -747,31 +753,59 @@ class CheckoutPage extends Component
             ->exists();
     }
 
-    private function saveCustomerAddress(Customer $customer): CustomerAddress
-    {
-        $hasDefaultAddress = $customer->addresses()
-            ->where('is_default', true)
-            ->exists();
+   private function resolveCheckoutAddressId(Customer $customer): ?int
+{
+    if ($this->customer_address_id) {
+        $addressId = CustomerAddress::query()
+            ->where('customer_id', $customer->id)
+            ->whereKey($this->customer_address_id)
+            ->value('id');
 
-        return CustomerAddress::query()->create([
-            'customer_id' => $customer->id,
-            'label' => app()->getLocale() === 'ar' ? 'عنوان الطلب' : 'Checkout Address',
-            'name' => $this->customer_name,
-            'phone' => $this->customer_phone,
-            'country' => 'Egypt',
-            'city' => $this->city,
-            'area' => $this->region ?: null,
-            'street' => $this->address,
-            'building' => null,
-            'floor' => null,
-            'apartment' => null,
-            'landmark' => null,
-            'notes' => $this->notes ?: null,
-            'latitude' => null,
-            'longitude' => null,
-            'is_default' => ! $hasDefaultAddress,
-        ]);
+        if ($addressId) {
+            return $addressId;
+        }
     }
+
+    try {
+        $isLoggedCustomer = auth('customer')->check();
+    } catch (\Throwable $e) {
+        $isLoggedCustomer = false;
+    }
+
+    if ($isLoggedCustomer && ! $this->save_address_to_account) {
+        return null;
+    }
+
+    return $this->createCheckoutAddress($customer)->id;
+}
+
+private function createCheckoutAddress(Customer $customer): CustomerAddress
+{
+    $hasDefaultAddress = $customer->addresses()
+        ->where('is_default', true)
+        ->exists();
+
+    return CustomerAddress::query()->create([
+        'customer_id' => $customer->id,
+        'label' => trim($this->new_address_label) ?: (
+            app()->getLocale() === 'ar' ? 'عنوان الطلب' : 'Checkout Address'
+        ),
+        'name' => $this->customer_name,
+        'phone' => $this->customer_phone,
+        'country' => 'Egypt',
+        'city' => $this->city,
+        'area' => $this->region ?: null,
+        'street' => $this->address,
+        'building' => null,
+        'floor' => null,
+        'apartment' => null,
+        'landmark' => null,
+        'notes' => $this->notes ?: null,
+        'latitude' => null,
+        'longitude' => null,
+        'is_default' => ! $hasDefaultAddress,
+    ]);
+}
 
     private function generateOrderNumber(): string
     {
@@ -928,7 +962,203 @@ class CheckoutPage extends Component
             ],
         };
     }
+    private function prefillCustomerData(): void
+    {
+        try {
+            $customer = auth('customer')->user();
+        } catch (\Throwable $e) {
+            $customer = null;
+        }
 
+        if (! $customer) {
+            return;
+        }
+
+        if (property_exists($this, 'customer_name')) {
+            $this->customer_name = $this->customer_name ?: (string) $customer->name;
+        }
+
+        if (property_exists($this, 'customer_email')) {
+            $this->customer_email = $this->customer_email ?: (string) $customer->email;
+        }
+
+        if (property_exists($this, 'customer_phone')) {
+            $this->customer_phone = $this->customer_phone ?: (string) $customer->phone;
+        }
+
+        $this->savedAddresses = CustomerAddress::query()
+            ->where('customer_id', $customer->id)
+            ->orderByDesc('is_default')
+            ->latest()
+            ->get()
+            ->map(fn(CustomerAddress $address) => [
+                'id' => $address->id,
+                'label' => $address->label ?: (app()->getLocale() === 'ar' ? 'عنوان' : 'Address'),
+                'name' => $address->name,
+                'phone' => $address->phone,
+                'country' => $address->country,
+                'city' => $address->city,
+                'area' => $address->area,
+                'street' => $address->street,
+                'building' => $address->building,
+                'floor' => $address->floor,
+                'apartment' => $address->apartment,
+                'landmark' => $address->landmark,
+                'notes' => $address->notes,
+                'is_default' => (bool) $address->is_default,
+                'display' => collect([
+                    $address->label,
+                    $address->city,
+                    $address->area,
+                    $address->street,
+                ])->filter()->implode(' - '),
+            ])
+            ->toArray();
+
+        $defaultAddress = collect($this->savedAddresses)
+            ->firstWhere('is_default', true);
+
+        if ($defaultAddress) {
+            $this->customer_address_id = $defaultAddress['id'];
+            $this->applySavedAddress($defaultAddress['id']);
+        }
+    }
+
+    public function updatedCustomerAddressId($value): void
+    {
+        if ($value) {
+            $this->applySavedAddress((int) $value);
+        }
+    }
+
+    public function applySavedAddress(int $addressId): void
+    {
+        $address = collect($this->savedAddresses)
+            ->firstWhere('id', $addressId);
+
+        if (! $address) {
+            return;
+        }
+
+        if (property_exists($this, 'customer_name') && ! empty($address['name'])) {
+            $this->customer_name = $address['name'];
+        }
+
+        if (property_exists($this, 'customer_phone') && ! empty($address['phone'])) {
+            $this->customer_phone = $address['phone'];
+        }
+$this->city = $address['city'] ?? $this->city;
+$this->region = $address['area'] ?? $this->region;
+$this->save_address_to_account = false;
+$this->new_address_label = '';
+        if (property_exists($this, 'shipping_address')) {
+            $this->shipping_address = $this->formatSavedAddress($address);
+        }
+
+        if (property_exists($this, 'address')) {
+            $this->address = $this->formatSavedAddress($address);
+        }
+
+        if (property_exists($this, 'notes') && ! empty($address['notes'])) {
+            $this->notes = $address['notes'];
+        }
+
+        if (property_exists($this, 'customer_notes') && ! empty($address['notes'])) {
+            $this->customer_notes = $address['notes'];
+        }
+    }
+
+    private function formatSavedAddress(array $address): string
+    {
+        return collect([
+            $address['country'] ?? null,
+            $address['city'] ?? null,
+            $address['area'] ?? null,
+            $address['street'] ?? null,
+            ! empty($address['building']) ? (app()->getLocale() === 'ar' ? 'مبنى ' : 'Building ') . $address['building'] : null,
+            ! empty($address['floor']) ? (app()->getLocale() === 'ar' ? 'دور ' : 'Floor ') . $address['floor'] : null,
+            ! empty($address['apartment']) ? (app()->getLocale() === 'ar' ? 'شقة ' : 'Apartment ') . $address['apartment'] : null,
+            $address['landmark'] ?? null,
+        ])->filter()->implode(' - ');
+    }
+
+
+
+private function checkoutAddressText(): ?string
+{
+    if (property_exists($this, 'shipping_address') && filled($this->shipping_address)) {
+        return trim($this->shipping_address);
+    }
+
+    if (property_exists($this, 'address') && filled($this->address)) {
+        return trim($this->address);
+    }
+
+    if (property_exists($this, 'customer_address') && filled($this->customer_address)) {
+        return trim($this->customer_address);
+    }
+
+    return null;
+}
+
+private function checkoutCityName(): string
+{
+    if (property_exists($this, 'shipping_city_id') && filled($this->shipping_city_id)) {
+        $city = ShippingCity::query()->find($this->shipping_city_id);
+
+        if ($city) {
+            return $city->name_ar
+                ?? $city->name_en
+                ?? $city->name
+                ?? 'غير محدد';
+        }
+    }
+
+    if (property_exists($this, 'city') && filled($this->city)) {
+        return trim($this->city);
+    }
+
+    return app()->getLocale() === 'ar' ? 'غير محدد' : 'Not specified';
+}
+
+private function checkoutCustomerName($customer): string
+{
+    if (property_exists($this, 'customer_name') && filled($this->customer_name)) {
+        return trim($this->customer_name);
+    }
+
+    if (property_exists($this, 'name') && filled($this->name)) {
+        return trim($this->name);
+    }
+
+    return $customer->name;
+}
+
+private function checkoutCustomerPhone($customer): string
+{
+    if (property_exists($this, 'customer_phone') && filled($this->customer_phone)) {
+        return trim($this->customer_phone);
+    }
+
+    if (property_exists($this, 'phone') && filled($this->phone)) {
+        return trim($this->phone);
+    }
+
+    return $customer->phone;
+}
+
+private function checkoutNotes(): ?string
+{
+    if (property_exists($this, 'customer_notes') && filled($this->customer_notes)) {
+        return trim($this->customer_notes);
+    }
+
+    if (property_exists($this, 'notes') && filled($this->notes)) {
+        return trim($this->notes);
+    }
+
+    return null;
+}
     public function render()
     {
         $cart = $this->cart();

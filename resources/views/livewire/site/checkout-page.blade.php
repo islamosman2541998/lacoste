@@ -187,7 +187,60 @@
                             <textarea rows="3" wire:model.defer="notes"></textarea>
                         </div>
                     </div>
+                    @if (!empty($savedAddresses))
+                        <div class="checkout-saved-addresses">
+                            <label>
+                                {{ app()->getLocale() === 'ar' ? 'اختيار عنوان محفوظ' : 'Choose Saved Address' }}
+                            </label>
 
+                            <select wire:model.live="customer_address_id">
+                                <option value="">
+                                    {{ app()->getLocale() === 'ar' ? 'اختر عنوانًا محفوظًا' : 'Choose saved address' }}
+                                </option>
+
+                                @foreach ($savedAddresses as $address)
+                                    <option value="{{ $address['id'] }}">
+                                        {{ $address['display'] }}
+                                        @if ($address['is_default'])
+                                            {{ app()->getLocale() === 'ar' ? ' - افتراضي' : ' - Default' }}
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <p>
+                                {{ app()->getLocale() === 'ar'
+                                    ? 'عند اختيار عنوان محفوظ سيتم ملء بيانات الشحن تلقائيًا.'
+                                    : 'Choosing a saved address will automatically fill shipping details.' }}
+                            </p>
+                        </div>
+                    @endif
+                    @auth('customer')
+                        @if (empty($customer_address_id))
+                            <div class="checkout-save-address">
+                                <label class="checkout-save-address-check">
+                                    <input type="checkbox" wire:model.live="save_address_to_account">
+
+                                    <span>
+                                        {{ app()->getLocale() === 'ar'
+                                            ? 'حفظ هذا العنوان في حسابي لاستخدامه لاحقًا'
+                                            : 'Save this address to my account for later' }}
+                                    </span>
+                                </label>
+
+                                @if ($save_address_to_account)
+                                    <div class="mt-4">
+                                        <label>
+                                            {{ app()->getLocale() === 'ar' ? 'اسم العنوان' : 'Address Label' }}
+                                        </label>
+
+                                        <input type="text" wire:model="new_address_label"
+                                            placeholder="{{ app()->getLocale() === 'ar' ? 'مثال: المنزل / العمل' : 'Example: Home / Work' }}">
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    @endauth
                     <div class="checkout-payment">
                         <h2>
                             {{ app()->getLocale() === 'ar' ? 'طريقة الدفع' : 'Payment Method' }}

@@ -197,6 +197,18 @@ class AddToCartButton extends Component
 
         $this->dispatch('cart-updated');
 
+        $this->dispatch('cart-updated')->to(CartCounter::class);
+
+        $this->dispatch(
+            'site-toast',
+            type: 'success',
+            icon: '✓',
+            title: app()->getLocale() === 'ar' ? 'تمت الإضافة' : 'Added',
+            message: app()->getLocale() === 'ar'
+                ? 'تم إضافة المنتج إلى السلة'
+                : 'Product has been added to cart'
+        );
+
         $this->dispatch(
             'site-toast',
             type: 'success',

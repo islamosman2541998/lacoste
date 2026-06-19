@@ -26,23 +26,7 @@ class WishlistButton extends Component
             ->where('is_active', true)
             ->findOrFail($this->productId);
 
-        $customerId = $this->customerId();
-
-        if (! $customerId) {
-            $this->dispatch('site-toast',
-                type: 'warning',
-                icon: '!',
-                title: app()->getLocale() === 'ar' ? 'تسجيل الدخول مطلوب' : 'Login required',
-                message: app()->getLocale() === 'ar'
-                    ? 'سجل الدخول أولًا لإضافة المنتج إلى المفضلة'
-                    : 'Please login first to add this product to wishlist'
-            );
-
-            return;
-        }
-
-        $existing = WishlistItem::query()
-            ->where('customer_id', $customerId)
+        $existing = $this->wishlistQuery()
             ->where('product_id', $product->id)
             ->first();
 
@@ -50,6 +34,9 @@ class WishlistButton extends Component
             $existing->delete();
 
             $this->wished = false;
+
+            $this->dispatch('wishlist-updated');
+            $this->dispatch('wishlist-updated')->to(WishlistCounter::class);
 
             $this->dispatch('site-toast',
                 type: 'success',
@@ -64,11 +51,15 @@ class WishlistButton extends Component
         }
 
         WishlistItem::query()->create([
-            'customer_id' => $customerId,
+            'customer_id' => $this->customerId(),
+            'session_id' => $this->customerId() ? null : session()->getId(),
             'product_id' => $product->id,
         ]);
 
         $this->wished = true;
+
+        $this->dispatch('wishlist-updated');
+        $this->dispatch('wishlist-updated')->to(WishlistCounter::class);
 
         $this->dispatch('site-toast',
             type: 'success',
@@ -82,16 +73,21 @@ class WishlistButton extends Component
 
     private function isWished(): bool
     {
-        $customerId = $this->customerId();
-
-        if (! $customerId) {
-            return false;
-        }
-
-        return WishlistItem::query()
-            ->where('customer_id', $customerId)
+        return $this->wishlistQuery()
             ->where('product_id', $this->productId)
             ->exists();
+    }
+
+    private function wishlistQuery()
+    {
+        $customerId = $this->customerId();
+
+        return WishlistItem::query()
+            ->when(
+                $customerId,
+                fn ($query) => $query->where('customer_id', $customerId),
+                fn ($query) => $query->where('session_id', session()->getId())
+            );
     }
 
     private function customerId(): ?int

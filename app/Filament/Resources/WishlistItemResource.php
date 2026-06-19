@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class WishlistItemResource extends Resource
 {
@@ -47,33 +48,46 @@ class WishlistItemResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('customer_id')
-                    ->label(__('admin.customer'))
-                    ->options(fn () => Customer::query()
-                        ->orderBy('name')
-                        ->pluck('name', 'id')
-                        ->toArray())
-                    ->searchable()
-                    ->preload()
-                    ->required(),
+                Forms\Components\Section::make(__('admin.wishlist_item_details'))
+                    ->schema([
+                        Forms\Components\Select::make('customer_id')
+                            ->label(__('admin.customer'))
+                            ->options(fn () => Customer::query()
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->toArray())
+                            ->searchable()
+                            ->preload()
+                            ->nullable()
+                            ->helperText(app()->getLocale() === 'ar'
+                                ? 'اتركه فارغًا إذا كانت الإضافة لزائر'
+                                : 'Leave empty if this wishlist item belongs to a guest'),
 
-                Forms\Components\Select::make('product_id')
-                    ->label(__('admin.product'))
-                    ->options(function () {
-                        return Product::query()
-                            ->with('arabicTranslation')
-                            ->orderByDesc('created_at')
-                            ->get()
-                            ->mapWithKeys(fn ($product) => [
-                                $product->id => $product->arabicTranslation?->name ?? 'Product #' . $product->id,
-                            ])
-                            ->toArray();
-                    })
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-            ])
-            ->columns(2);
+                        Forms\Components\TextInput::make('session_id')
+                            ->label(app()->getLocale() === 'ar' ? 'جلسة الزائر' : 'Guest Session')
+                            ->maxLength(255)
+                            ->helperText(app()->getLocale() === 'ar'
+                                ? 'يُستخدم فقط لو العنصر مضاف بواسطة زائر'
+                                : 'Used only when the item belongs to a guest'),
+
+                        Forms\Components\Select::make('product_id')
+                            ->label(__('admin.product'))
+                            ->options(function () {
+                                return Product::query()
+                                    ->with('arabicTranslation')
+                                    ->orderByDesc('created_at')
+                                    ->get()
+                                    ->mapWithKeys(fn ($product) => [
+                                        $product->id => $product->arabicTranslation?->name ?? 'Product #' . $product->id,
+                                    ])
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                    ])
+                    ->columns(2),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -85,25 +99,64 @@ class WishlistItemResource extends Resource
                 'product.englishTranslation',
             ]))
             ->columns([
-                Tables\Columns\TextColumn::make('customer.name')
+                Tables\Columns\TextColumn::make('customer_display')
                     ->label(__('admin.customer'))
-                    ->searchable()
-                    ->sortable(),
+                    ->state(function ($record) {
+                        if ($record->customer) {
+                            return $record->customer->name;
+                        }
 
-                Tables\Columns\TextColumn::make('customer.phone')
+                        return app()->getLocale() === 'ar' ? 'زائر' : 'Guest';
+                    })
+                    ->badge()
+                    ->color(fn ($record) => $record->customer ? 'success' : 'gray')
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('customer', function (Builder $customerQuery) use ($search) {
+                            $customerQuery
+                                ->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        });
+                    })
+                    ->sortable(false),
+
+                Tables\Columns\TextColumn::make('customer_phone')
                     ->label(__('admin.phone'))
-                    ->searchable()
+                    ->state(fn ($record) => $record->customer?->phone ?: '-')
+                    ->copyable(fn ($record) => filled($record->customer?->phone))
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('customer', function (Builder $customerQuery) use ($search) {
+                            $customerQuery->where('phone', 'like', "%{$search}%");
+                        });
+                    }),
+
+                Tables\Columns\TextColumn::make('session_id')
+                    ->label(app()->getLocale() === 'ar' ? 'جلسة الزائر' : 'Guest Session')
+                    ->formatStateUsing(fn ($state) => $state ? Str::limit($state, 14) : '-')
+                    ->badge()
+                    ->color('warning')
                     ->copyable()
-                    ->placeholder('-'),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\ImageColumn::make('product.main_image')
                     ->label(__('admin.image'))
                     ->disk('public')
                     ->square(),
 
-                Tables\Columns\TextColumn::make('product.arabicTranslation.name')
+                Tables\Columns\TextColumn::make('product_name')
                     ->label(__('admin.product'))
-                    ->searchable()
+                    ->state(function ($record) {
+                        return $record->product?->arabicTranslation?->name
+                            ?? $record->product?->englishTranslation?->name
+                            ?? 'Product #' . $record->product_id;
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('product.arabicTranslation', function (Builder $productQuery) use ($search) {
+                            $productQuery->where('name', 'like', "%{$search}%");
+                        })->orWhereHas('product.englishTranslation', function (Builder $productQuery) use ($search) {
+                            $productQuery->where('name', 'like', "%{$search}%");
+                        });
+                    })
                     ->wrap(),
 
                 Tables\Columns\TextColumn::make('product.price')
@@ -121,6 +174,20 @@ class WishlistItemResource extends Resource
                     ->sortable(),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('type')
+                    ->label(app()->getLocale() === 'ar' ? 'نوع الإضافة' : 'Type')
+                    ->options([
+                        'customer' => app()->getLocale() === 'ar' ? 'عملاء مسجلين' : 'Customers',
+                        'guest' => app()->getLocale() === 'ar' ? 'زوار' : 'Guests',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return match ($data['value'] ?? null) {
+                            'customer' => $query->whereNotNull('customer_id'),
+                            'guest' => $query->whereNull('customer_id')->whereNotNull('session_id'),
+                            default => $query,
+                        };
+                    }),
+
                 Tables\Filters\SelectFilter::make('customer_id')
                     ->label(__('admin.customer'))
                     ->options(fn () => Customer::query()
@@ -141,12 +208,18 @@ class WishlistItemResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label(__('admin.view')),
+
+                Tables\Actions\EditAction::make()
+                    ->label(__('admin.edit')),
+
+                Tables\Actions\DeleteAction::make()
+                    ->label(__('admin.delete')),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                    ->label(__('admin.delete')),
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -157,8 +230,17 @@ class WishlistItemResource extends Resource
             ->schema([
                 Infolists\Components\Section::make(__('admin.wishlist_item_details'))
                     ->schema([
-                        Infolists\Components\TextEntry::make('customer.name')
-                            ->label(__('admin.customer')),
+                        Infolists\Components\TextEntry::make('customer_display')
+                            ->label(__('admin.customer'))
+                            ->state(function ($record) {
+                                if ($record->customer) {
+                                    return $record->customer->name;
+                                }
+
+                                return app()->getLocale() === 'ar' ? 'زائر' : 'Guest';
+                            })
+                            ->badge()
+                            ->color(fn ($record) => $record->customer ? 'success' : 'gray'),
 
                         Infolists\Components\TextEntry::make('customer.phone')
                             ->label(__('admin.phone'))
@@ -170,8 +252,18 @@ class WishlistItemResource extends Resource
                             ->copyable()
                             ->placeholder('-'),
 
-                        Infolists\Components\TextEntry::make('product.arabicTranslation.name')
-                            ->label(__('admin.product')),
+                        Infolists\Components\TextEntry::make('session_id')
+                            ->label(app()->getLocale() === 'ar' ? 'جلسة الزائر' : 'Guest Session')
+                            ->copyable()
+                            ->placeholder('-'),
+
+                        Infolists\Components\TextEntry::make('product_name')
+                            ->label(__('admin.product'))
+                            ->state(function ($record) {
+                                return $record->product?->arabicTranslation?->name
+                                    ?? $record->product?->englishTranslation?->name
+                                    ?? 'Product #' . $record->product_id;
+                            }),
 
                         Infolists\Components\ImageEntry::make('product.main_image')
                             ->label(__('admin.image'))

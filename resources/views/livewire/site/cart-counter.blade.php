@@ -8,6 +8,6 @@
     </svg>
 
     <span class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-xs font-bold text-white">
-        {{ $this->cartCount }}
+       {{ $count }}
     </span>
 </a>

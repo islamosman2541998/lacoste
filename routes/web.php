@@ -28,6 +28,8 @@ Route::view('/track-order', 'site.pages.orders.track')
     ->name('site.orders.track');
 Route::view('/my-orders', 'site.pages.customer.orders')
     ->name('site.customer.orders');
+    Route::view('/wishlist', 'site.pages.wishlist.index')
+    ->name('site.wishlist.index');
 Route::middleware('guest:customer')->group(function () {
     Route::view('/customer/login', 'site.pages.customer.login')
         ->name('site.customer.login');
@@ -39,6 +41,8 @@ Route::middleware('guest:customer')->group(function () {
 Route::middleware('auth:customer')->group(function () {
     Route::view('/account', 'site.pages.customer.account')
         ->name('site.customer.account');
+        Route::view('/account/addresses', 'site.pages.customer.addresses')
+    ->name('site.customer.addresses');
 });
 
 Route::post('/customer/logout', function () {
